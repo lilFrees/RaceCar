@@ -1,9 +1,9 @@
-import style from "./Races.module.css";
+import style from "./Races.module.scss";
 
 function Races() {
   return (
     <div className={style.container}>
-      <h1>Races</h1>
+      
     </div>
   );
 }

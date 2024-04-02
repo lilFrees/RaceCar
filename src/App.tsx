@@ -1,4 +1,4 @@
-import "./App.css";
+import "./App.scss";
 import { Route, Routes } from "react-router-dom";
 import Garage from "./pages/Garage/Garage";
 import Winners from "./pages/Winners/Winners";

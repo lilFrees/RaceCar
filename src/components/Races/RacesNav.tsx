@@ -1,4 +1,4 @@
-import style from "./RacesNav.module.css";
+import style from "./RacesNav.module.scss";
 import { CiPlay1 } from "react-icons/ci";
 import { GrPowerReset } from "react-icons/gr";
 
