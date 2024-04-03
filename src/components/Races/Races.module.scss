@@ -1,5 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  padding-block: 1rem;
+  border-top: 5px dashed yellow;
+  border-bottom: 5px dashed yellow;
 }

@@ -1,14 +1,30 @@
 import style from "./Car.module.scss";
 import { CarProps } from "../../types/types";
 import { FaPlay, FaStop } from "react-icons/fa";
-import carImg from "../../assets/car-img.png";
+import CarImg from "../../assets/CarImg";
+import useCars from "../../hooks/useCars";
 
 function Car(props: { car: CarProps }) {
+  const { selectCarHandler, deleteCar } = useCars();
+
+  function removeCarHandler() {
+    deleteCar(props.car.id);
+  }
+
   return (
     <div className={style.car}>
       <div className={style.actions}>
-        <button className={style.btn}>Select</button>
-        <button className={style.btn}>Remove</button>
+        <button
+          className={style.btn}
+          onClick={() => {
+            selectCarHandler(props.car);
+          }}
+        >
+          Select
+        </button>
+        <button className={style.btn} onClick={removeCarHandler}>
+          Remove
+        </button>
         <button className={`${style.btn} ${style.icon}`}>
           <FaPlay />
         </button>
@@ -17,8 +33,9 @@ function Car(props: { car: CarProps }) {
         </button>
       </div>
       <div className={style.carIcon}>
-        <img src={carImg} alt={`Car ${props.car.name}`} className={style.img} />
+        <CarImg color={props.car.color} />
       </div>
+      <div className={style.name}>{props.car.name}</div>
     </div>
   );
 }

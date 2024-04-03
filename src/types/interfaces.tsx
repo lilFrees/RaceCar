@@ -8,3 +8,8 @@ export interface Action {
   value: any;
   type: string;
 }
+
+export interface UpdateHandler {
+  name: string;
+  color: string;
+}
