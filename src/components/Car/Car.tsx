@@ -5,24 +5,29 @@ import CarImg from "../../assets/CarImg";
 import useCars from "../../hooks/useCars";
 
 function Car(props: { car: CarProps }) {
-  const { selectCarHandler, deleteCar } = useCars();
-
-  function removeCarHandler() {
-    deleteCar(props.car.id);
-  }
+  const { dispatch, deleteCar, state } = useCars();
 
   return (
-    <div className={style.car}>
+    <div
+      className={`${style.car} ${
+        state.selectedCar?.id === props.car.id && style.selected
+      }`}
+    >
       <div className={style.actions}>
         <button
           className={style.btn}
           onClick={() => {
-            selectCarHandler(props.car);
+            dispatch({ type: "SELECT_CAR", payload: props.car });
           }}
         >
           Select
         </button>
-        <button className={style.btn} onClick={removeCarHandler}>
+        <button
+          className={style.btn}
+          onClick={() => {
+            deleteCar(props.car.id);
+          }}
+        >
           Remove
         </button>
         <button className={`${style.btn} ${style.icon}`}>

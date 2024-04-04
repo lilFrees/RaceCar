@@ -1,38 +1,56 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useReducer } from "react";
 import { CarProps } from "../types/types";
+import { ApiContextType, StateType } from "../types/interfaces";
+import { ActionType } from "../types/types";
 
-// interface APIFunctions {
-//   getCars(): CarProps[];
-//   getCar(id: number): CarProps;
-//   createCar(name: string, color: string): CarProps;
-//   deleteCar(id: number): void;
-//   updateCar(id: number, name: string, color: string): CarProps;
-//   startStop(
-//     id: number,
-//     status: "started" | "stopped"
-//   ): { velocity: number; distance: number };
-//   drive(id: number): void;
-// }
-export const ApiContext = createContext({
+const initialState: StateType = {
+  cars: [],
+  selectedCar: null,
   carIsSelected: false,
-  selectedCar: { id: NaN, name: "", color: "" },
-  selectCarHandler: (_value: CarProps) => {},
-  getCars: () => {},
-  getCar: (_id: number) => {},
-  createCar: (_name: string, _color: string) => {},
-  deleteCar: (_id: number) => {},
-  updateCar: (_id: number, _name: string, _color: string) => {},
-  startStop: (_id: number, _status: "started" | "stopped") => {},
-  drive: () => {},
-});
+};
 
-export function ApiProvider(props: any) {
+function reducer(state: StateType, action: ActionType): StateType {
+  switch (action.type) {
+    case "SET_CARS":
+      return { ...state, cars: action.payload };
+    case "SELECT_CAR":
+      return { ...state, selectedCar: action.payload, carIsSelected: true };
+    case "DESELECT_CAR":
+      return { ...state, selectedCar: null, carIsSelected: false };
+    case "UPDATE_CAR":
+      return {
+        ...state,
+        cars: state.cars.map((car) =>
+          car.id === action.payload.id ? action.payload : car
+        ),
+        selectedCar: null,
+        carIsSelected: false,
+      };
+    case "CREATE_CAR":
+      return { ...state, cars: [...state.cars, action.payload] };
+    case "DELETE_CAR":
+      return {
+        ...state,
+        cars: state.cars.filter((car) => car.id !== action.payload),
+      };
+
+    default:
+      return state;
+  }
+}
+
+export const ApiContext = createContext<ApiContextType | null>(null);
+
+export function ApiProvider({ children }: { children: React.ReactNode }) {
   const BASE_URL: string = "http://127.0.0.1:3000";
+
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   async function getCars() {
     try {
       const result = await fetch(`${BASE_URL}/garage`);
-      const data = result.json();
+      const data = (await result.json()) as CarProps[];
+      dispatch({ type: "SET_CARS", payload: data });
       return data;
     } catch (error) {
       throw new Error("Failed to get cars: " + error);
@@ -42,7 +60,7 @@ export function ApiProvider(props: any) {
   async function getCar(id: number) {
     try {
       const result = await fetch(`${BASE_URL}/garage/${id}`);
-      const data = result.json();
+      const data = await result.json();
       return data;
     } catch (error) {
       throw new Error(`Cannot get cars with the id ${id}: ` + error);
@@ -59,8 +77,7 @@ export function ApiProvider(props: any) {
         body: JSON.stringify({ name, color }),
       });
       const data = await result.json();
-
-      return data;
+      dispatch({ type: "CREATE_CAR", payload: data });
     } catch (error) {
       throw new Error("Failed to create a car: " + error);
     }
@@ -77,6 +94,8 @@ export function ApiProvider(props: any) {
 
       const result = await data.json();
 
+      dispatch({ type: "DELETE_CAR", payload: id });
+
       return result;
     } catch (error) {
       throw new Error("Failed to create a car: " + error);
@@ -85,20 +104,24 @@ export function ApiProvider(props: any) {
 
   async function updateCar(id: number, name: string, color: string) {
     try {
-      const data = await fetch(`${BASE_URL}/garage/${id}`, {
+      const response = await fetch(`${BASE_URL}/garage/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ name, color }),
       });
-      setSelectedCar({
-        id: NaN,
-        name: "",
-        color: "",
-      });
-      setCarIsSelected(false);
-      const result = data.json();
+
+      if (!response.ok) {
+        console.error(
+          "Failed to update the car with response status:",
+          response.status
+        );
+        return null;
+      }
+      const result = await response.json();
+
+      dispatch({ type: "UPDATE_CAR", payload: result });
 
       return result;
     } catch (error) {
@@ -117,7 +140,7 @@ export function ApiProvider(props: any) {
         method: "PATCH",
       });
 
-      const result = data.json();
+      const result = await data.json();
 
       return result;
     } catch (error) {
@@ -127,23 +150,13 @@ export function ApiProvider(props: any) {
 
   async function drive() {}
 
-  const [selectedCar, setSelectedCar] = useState<CarProps>({
-    id: 0,
-    name: "",
-    color: "",
-  });
+  useEffect(() => {
+    getCars();
+  }, []);
 
-  const [carIsSelected, setCarIsSelected] = useState<boolean>(false);
-
-  function selectCarHandler(value: CarProps) {
-    setSelectedCar(value);
-    setCarIsSelected(true);
-  }
-
-  const apiFunctions = {
-    carIsSelected,
-    selectedCar,
-    selectCarHandler,
+  const contextValue = {
+    state,
+    dispatch,
     getCars,
     getCar,
     createCar,
@@ -154,8 +167,6 @@ export function ApiProvider(props: any) {
   };
 
   return (
-    <ApiContext.Provider value={apiFunctions}>
-      {props.children}
-    </ApiContext.Provider>
+    <ApiContext.Provider value={contextValue}>{children}</ApiContext.Provider>
   );
 }
