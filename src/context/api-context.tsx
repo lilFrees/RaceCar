@@ -176,18 +176,13 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
   async function startStop(id: number, status: "started" | "stopped") {
     try {
-      const url = new URL(`${BASE_URL}/engine`);
-
-      url.searchParams.append(`id`, id.toString());
-      url.searchParams.append(`status`, status);
-
-      const data = await fetch(url, {
+      const data = await fetch(`${BASE_URL}/engine?id=${id}&status=${status}`, {
         method: "PATCH",
       });
 
       const result = await data.json();
 
-      console.log(result);
+      console.log(id, result);
 
       return result;
     } catch (error) {

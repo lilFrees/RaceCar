@@ -4,20 +4,20 @@ import { FaPlay, FaStop } from "react-icons/fa";
 import CarImg from "../../assets/CarImg";
 import useCars from "../../hooks/useCars";
 
-function Car(props: { car: CarProps }) {
+function Car({ car }: { car: CarProps }) {
   const { dispatch, deleteCar, state, startStop } = useCars();
 
   return (
     <div
       className={`${style.car} ${
-        state.selectedCar?.id === props.car.id && style.selected
+        state.selectedCar?.id === car.id && style.selected
       }`}
     >
       <div className={style.actions}>
         <button
           className={style.btn}
           onClick={() => {
-            dispatch({ type: "SELECT_CAR", payload: props.car });
+            dispatch({ type: "SELECT_CAR", payload: car });
           }}
         >
           Select
@@ -25,7 +25,7 @@ function Car(props: { car: CarProps }) {
         <button
           className={style.btn}
           onClick={() => {
-            deleteCar(props.car.id);
+            deleteCar(car.id);
           }}
         >
           Remove
@@ -33,19 +33,24 @@ function Car(props: { car: CarProps }) {
         <button
           className={`${style.btn} ${style.icon}`}
           onClick={() => {
-            startStop(props.car.id, "stopped");
+            startStop(car.id, "started");
           }}
         >
           <FaPlay />
         </button>
-        <button className={`${style.btn} ${style.icon}`}>
+        <button
+          className={`${style.btn} ${style.icon}`}
+          onClick={() => {
+            startStop(car.id, "stopped");
+          }}
+        >
           <FaStop />
         </button>
       </div>
       <div className={style.carIcon}>
-        <CarImg color={props.car.color} />
+        <CarImg color={car.color} />
       </div>
-      <div className={style.name}>{props.car.name}</div>
+      <div className={style.name}>{car.name}</div>
     </div>
   );
 }
