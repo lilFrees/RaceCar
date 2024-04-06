@@ -10,4 +10,5 @@ export type ActionType =
   | { type: "DESELECT_CAR" }
   | { type: "UPDATE_CAR"; payload: CarProps }
   | { type: "CREATE_CAR"; payload: CarProps }
-  | { type: "DELETE_CAR"; payload: number };
+  | { type: "DELETE_CAR"; payload: number }
+  | { type: "SET_PAGE"; payload: number };

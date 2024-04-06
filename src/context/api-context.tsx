@@ -2,12 +2,16 @@ import { createContext, useEffect, useReducer } from "react";
 import { CarProps } from "../types/types";
 import { ApiContextType, StateType } from "../types/interfaces";
 import { ActionType } from "../types/types";
+import RandomCars from "../data/randomCars.json";
 
 const initialState: StateType = {
   cars: [],
   selectedCar: null,
   carIsSelected: false,
+  page: 1,
 };
+
+const CARS_PER_PAGE = 7;
 
 function reducer(state: StateType, action: ActionType): StateType {
   switch (action.type) {
@@ -33,7 +37,11 @@ function reducer(state: StateType, action: ActionType): StateType {
         ...state,
         cars: state.cars.filter((car) => car.id !== action.payload),
       };
-
+    case "SET_PAGE":
+      return {
+        ...state,
+        page: action.payload,
+      };
     default:
       return state;
   }
@@ -48,7 +56,9 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
   async function getCars() {
     try {
-      const result = await fetch(`${BASE_URL}/garage`);
+      const result = await fetch(
+        `${BASE_URL}/garage?_page=${state.page}&_limit=7`
+      );
       const data = (await result.json()) as CarProps[];
       dispatch({ type: "SET_CARS", payload: data });
       return data;
@@ -67,6 +77,18 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function getMaxPages(): Promise<number> {
+    try {
+      const request = await fetch(`${BASE_URL}/garage`);
+      const data = await request.json();
+
+      const maxPages = Math.floor((data as CarProps[]).length / 7);
+      return maxPages;
+    } catch (error) {
+      throw new Error("Failed to get max pages");
+    }
+  }
+
   async function createCar(name: string, color: string) {
     try {
       const result = await fetch(`${BASE_URL}/garage`, {
@@ -80,6 +102,29 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: "CREATE_CAR", payload: data });
     } catch (error) {
       throw new Error("Failed to create a car: " + error);
+    }
+  }
+
+  async function create100Cars() {
+    const cars: string[] = RandomCars.cars;
+    const models: string[] = RandomCars.models;
+
+    function randomColor() {
+      const randomColor = Math.floor(Math.random() * 16777215)
+        .toString(16)
+        .padStart(6, "0");
+
+      return "#" + randomColor;
+    }
+
+    function randomCar() {
+      const car = cars[Math.floor(Math.random() * cars.length)];
+      const model = models[Math.floor(Math.random() * models.length)];
+      return car + " " + model;
+    }
+
+    for (let i = 0; i < 100; i++) {
+      createCar(randomCar(), randomColor());
     }
   }
 
@@ -142,6 +187,8 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
       const result = await data.json();
 
+      console.log(result);
+
       return result;
     } catch (error) {
       throw new Error(`Failed to start or stop the car: ${error}`);
@@ -150,16 +197,30 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
   async function drive() {}
 
+  async function setPage(newPage: number) {
+    const request = await fetch(`${BASE_URL}/garage`);
+    const response = await request.json();
+
+    const maxPage = Math.floor(response.length / CARS_PER_PAGE);
+
+    if (newPage <= maxPage && newPage >= 1) {
+      dispatch({ type: "SET_PAGE", payload: newPage });
+    }
+  }
+
   useEffect(() => {
     getCars();
-  }, []);
+  }, [state.page]);
 
   const contextValue = {
     state,
     dispatch,
+    setPage,
     getCars,
     getCar,
+    getMaxPages,
     createCar,
+    create100Cars,
     deleteCar,
     updateCar,
     startStop,

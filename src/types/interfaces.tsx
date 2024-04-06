@@ -19,7 +19,9 @@ export interface ApiContextType {
   dispatch: React.Dispatch<ActionType>;
   getCars: () => Promise<CarProps[]>;
   getCar: (id: number) => Promise<CarProps>;
+  getMaxPages: () => Promise<number>;
   createCar: (name: string, color: string) => Promise<void>;
+  create100Cars: () => void;
   deleteCar: (id: number) => Promise<void>;
   updateCar: (id: number, name: string, color: string) => Promise<void>;
   startStop: (id: number, status: "started" | "stopped") => Promise<any>;
@@ -30,4 +32,5 @@ export interface StateType {
   cars: CarProps[];
   selectedCar: CarProps | null;
   carIsSelected: boolean;
+  page: number;
 }

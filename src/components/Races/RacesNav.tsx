@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { CarNavType } from "../../types/interfaces";
 
 function RacesNav() {
-  const { state, createCar, updateCar } = useCars();
+  const { state, createCar, updateCar, create100Cars } = useCars();
 
   const [updatingValue, setUpdatingValue] = useState<CarNavType>({
     name: "",
@@ -85,6 +85,10 @@ function RacesNav() {
           className={style.btn}
           onClick={() => {
             createCar(creatingValue.name, creatingValue.color);
+            setCreatingValue({
+              name: "",
+              color: "#000",
+            });
           }}
         >
           Create
@@ -123,7 +127,9 @@ function RacesNav() {
         </button>
       </div>
       <div className={style.nav__item}>
-        <button className={style.btn}>Generate Cars</button>
+        <button className={style.btn} onClick={create100Cars}>
+          Generate Cars
+        </button>
       </div>
     </div>
   );

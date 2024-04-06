@@ -7,7 +7,7 @@ function Races() {
 
   return (
     <div className={style.container}>
-      {state.cars.map((car, i) => (
+      {state.cars.slice(0, 7).map((car, i) => (
         <Car car={car} key={i} />
       ))}
     </div>

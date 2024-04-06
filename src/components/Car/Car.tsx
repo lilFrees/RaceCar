@@ -5,7 +5,7 @@ import CarImg from "../../assets/CarImg";
 import useCars from "../../hooks/useCars";
 
 function Car(props: { car: CarProps }) {
-  const { dispatch, deleteCar, state } = useCars();
+  const { dispatch, deleteCar, state, startStop } = useCars();
 
   return (
     <div
@@ -30,7 +30,12 @@ function Car(props: { car: CarProps }) {
         >
           Remove
         </button>
-        <button className={`${style.btn} ${style.icon}`}>
+        <button
+          className={`${style.btn} ${style.icon}`}
+          onClick={() => {
+            startStop(props.car.id, "stopped");
+          }}
+        >
           <FaPlay />
         </button>
         <button className={`${style.btn} ${style.icon}`}>
