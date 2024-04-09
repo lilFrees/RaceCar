@@ -1,0 +1,8 @@
+@keyframes moving {
+  0% {
+    left: 0;
+  }
+  100% {
+    left: calc(100% - 6rem);
+  }
+}

@@ -9,9 +9,11 @@ const initialState: StateType = {
   selectedCar: null,
   carIsSelected: false,
   page: 1,
+  movingCars: {},
+  raceCompletionTimes: {},
 };
 
-const CARS_PER_PAGE = 7;
+export const CARS_PER_PAGE = 7;
 
 function reducer(state: StateType, action: ActionType): StateType {
   switch (action.type) {
@@ -42,6 +44,36 @@ function reducer(state: StateType, action: ActionType): StateType {
         ...state,
         page: action.payload,
       };
+    case "START_CAR":
+      return {
+        ...state,
+        movingCars: { ...state.movingCars, [action.payload]: true },
+      };
+    case "STOP_CAR":
+    case "DRIVE_CAR_FAILURE":
+      return {
+        ...state,
+        movingCars: { ...state.movingCars, [action.payload]: false },
+      };
+    case "DRIVE_CAR_SUCCESS":
+      return {
+        ...state,
+        movingCars: { ...state.movingCars, [action.payload]: true },
+      };
+    case "SET_RACE_COMPLETION_TIME":
+      return {
+        ...state,
+        raceCompletionTimes: {
+          ...state.raceCompletionTimes,
+          [action.payload.id]: action.payload.time,
+        },
+      };
+    case "RESET_CARS":
+      return {
+        ...state,
+        movingCars: {}, // Reset moving cars state
+        raceCompletionTimes: {}, // Clear race completion times
+      };
     default:
       return state;
   }
@@ -60,6 +92,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
         `${BASE_URL}/garage?_page=${state.page}&_limit=7`
       );
       const data = (await result.json()) as CarProps[];
+      data.map((car) => (car.status = "stopped"));
       dispatch({ type: "SET_CARS", payload: data });
       return data;
     } catch (error) {
@@ -82,8 +115,20 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
       const request = await fetch(`${BASE_URL}/garage`);
       const data = await request.json();
 
-      const maxPages = Math.floor((data as CarProps[]).length / 7);
+      const maxPages = Math.floor((data as CarProps[]).length / 7) + 1;
       return maxPages;
+    } catch (error) {
+      throw new Error("Failed to get max pages");
+    }
+  }
+
+  async function getCarsLength(): Promise<number> {
+    try {
+      const request = await fetch(`${BASE_URL}/garage`);
+      const data = await request.json();
+
+      const length = (data as CarProps[]).length;
+      return length;
     } catch (error) {
       throw new Error("Failed to get max pages");
     }
@@ -176,21 +221,43 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
   async function startStop(id: number, status: "started" | "stopped") {
     try {
-      const data = await fetch(`${BASE_URL}/engine?id=${id}&status=${status}`, {
-        method: "PATCH",
-      });
+      const response = await fetch(
+        `${BASE_URL}/engine?id=${id}&status=${status}`,
+        {
+          method: "PATCH",
+        }
+      );
+      const result = await response.json();
 
-      const result = await data.json();
-
-      console.log(id, result);
-
-      return result;
+      if (status === "started" && response.ok) {
+        const { velocity, distance } = result;
+        const time = distance / velocity / 1000;
+        dispatch({ type: "SET_RACE_COMPLETION_TIME", payload: { id, time } });
+      } else if (status === "stopped") {
+        dispatch({
+          type: "SET_RACE_COMPLETION_TIME",
+          payload: { id, time: NaN },
+        });
+      }
     } catch (error) {
-      throw new Error(`Failed to start or stop the car: ${error}`);
+      console.error(`Failed to start or stop the car: ${error}`);
     }
   }
 
-  async function drive() {}
+  async function drive(id: number) {
+    try {
+      const response = await fetch(`${BASE_URL}/engine?id=${id}&status=drive`, {
+        method: "PATCH",
+      });
+      const result = await response.json();
+
+      console.log(result);
+
+      return result;
+    } catch (error: string | any) {
+      console.error(error.message);
+    }
+  }
 
   async function setPage(newPage: number) {
     const request = await fetch(`${BASE_URL}/garage`);
@@ -203,6 +270,40 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function toggleCarMovement(
+    carId: number,
+    shouldStart: boolean
+  ): Promise<void> {
+    try {
+      await startStop(carId, shouldStart ? "started" : "stopped");
+      dispatch({
+        type: shouldStart ? "START_CAR" : "STOP_CAR",
+        payload: carId,
+      });
+
+      if (shouldStart) {
+        try {
+          const result = await drive(carId);
+          if (result.success) {
+            dispatch({ type: "DRIVE_CAR_SUCCESS", payload: carId });
+          } else {
+            dispatch({ type: "DRIVE_CAR_FAILURE", payload: carId });
+          }
+        } catch (error) {
+          dispatch({ type: "DRIVE_CAR_FAILURE", payload: carId });
+        }
+      }
+    } catch (error) {
+      console.error(
+        `Failed to ${shouldStart ? "start" : "stop"} the car: ${error}`
+      );
+    }
+  }
+
+  const resetCars = () => {
+    dispatch({ type: "RESET_CARS" });
+  };
+
   useEffect(() => {
     getCars();
   }, [state.page]);
@@ -214,12 +315,15 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     getCars,
     getCar,
     getMaxPages,
+    getCarsLength,
     createCar,
     create100Cars,
     deleteCar,
     updateCar,
     startStop,
     drive,
+    toggleCarMovement,
+    resetCars,
   };
 
   return (

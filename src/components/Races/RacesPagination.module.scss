@@ -2,8 +2,18 @@
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: end;
+  justify-content: space-between;
   gap: 2rem;
+
+  .info {
+    font-size: 2rem;
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
 
   &Btn {
     width: 3rem;

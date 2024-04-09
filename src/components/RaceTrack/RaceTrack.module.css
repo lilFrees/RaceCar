@@ -1,0 +1,37 @@
+.track {
+  width: 100%;
+  height: 100%;
+  outline: 1px solid white;
+  display: flex;
+  align-items: center;
+  margin-inline: 2rem;
+  transition: 0.2s all;
+  position: relative;
+}
+
+.carIcon {
+  width: 6rem;
+  height: 2rem;
+  position: absolute;
+  left: 0;
+
+  & > svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+  }
+}
+
+.move {
+  animation: moving 3s linear forwards;
+}
+
+.name {
+  margin-left: 6rem;
+  font-size: 1.5rem;
+}
+
+.selected {
+  background-color: rgba(255, 255, 255, 0.2);
+}

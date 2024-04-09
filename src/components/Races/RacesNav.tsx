@@ -1,41 +1,41 @@
-import style from "./RacesNav.module.scss";
-import { CiPlay1 } from "react-icons/ci";
-import { GrPowerReset } from "react-icons/gr";
-import useCars from "../../hooks/useCars";
-import { useEffect, useState } from "react";
-import { CarNavType } from "../../types/interfaces";
+import style from './RacesNav.module.scss'
+import { CiPlay1 } from 'react-icons/ci'
+import { GrPowerReset } from 'react-icons/gr'
+import useCars from '../../hooks/useCars'
+import { useEffect, useState } from 'react'
+import { CarNavType } from '../../types/interfaces'
 
 function RacesNav() {
-  const { state, createCar, updateCar, create100Cars } = useCars();
+  const { state, createCar, updateCar, create100Cars } = useCars()
 
   const [updatingValue, setUpdatingValue] = useState<CarNavType>({
-    name: "",
-    color: "",
-  });
+    name: '',
+    color: '#000000',
+  })
 
   function nameUpdatingHandler(value: string) {
     if (state.carIsSelected) {
-      setUpdatingValue({ ...updatingValue, name: value });
+      setUpdatingValue({ ...updatingValue, name: value })
     }
   }
 
   function colorUpdatingHandler(value: string) {
     if (state.carIsSelected) {
-      setUpdatingValue({ ...updatingValue, color: value });
+      setUpdatingValue({ ...updatingValue, color: value })
     }
   }
 
   const [creatingValue, setCreatingValue] = useState<CarNavType>({
-    name: "",
-    color: "",
-  });
+    name: '',
+    color: '#000000',
+  })
 
   function nameCreatingValue(value: string) {
-    setCreatingValue({ ...creatingValue, name: value });
+    setCreatingValue({ ...creatingValue, name: value })
   }
 
   function colorCreatingValue(value: string) {
-    setCreatingValue({ ...creatingValue, color: value });
+    setCreatingValue({ ...creatingValue, color: value })
   }
 
   useEffect(() => {
@@ -43,14 +43,14 @@ function RacesNav() {
       setUpdatingValue({
         name: state.selectedCar!.name,
         color: state.selectedCar!.color,
-      });
+      })
     } else {
       setUpdatingValue({
-        name: "",
-        color: "#000",
-      });
+        name: '',
+        color: '#000000',
+      })
     }
-  }, [state.selectedCar]);
+  }, [state.selectedCar])
 
   return (
     <div className={style.nav}>
@@ -70,7 +70,7 @@ function RacesNav() {
           placeholder="TYPE CAR BRAND"
           value={creatingValue.name}
           onChange={(val) => {
-            nameCreatingValue(val.target.value);
+            nameCreatingValue(val.target.value)
           }}
         />
         <input
@@ -78,17 +78,17 @@ function RacesNav() {
           className={style.color}
           value={creatingValue.color}
           onChange={(val) => {
-            colorCreatingValue(val.target.value);
+            colorCreatingValue(val.target.value)
           }}
         />
         <button
           className={style.btn}
           onClick={() => {
-            createCar(creatingValue.name, creatingValue.color);
+            createCar(creatingValue.name, creatingValue.color)
             setCreatingValue({
-              name: "",
-              color: "#000",
-            });
+              name: '',
+              color: '#000000',
+            })
           }}
         >
           Create
@@ -102,7 +102,7 @@ function RacesNav() {
           placeholder="TYPE CAR BRAND"
           value={updatingValue.name}
           onChange={(val) => {
-            nameUpdatingHandler(val.target.value);
+            nameUpdatingHandler(val.target.value)
           }}
         />
         <input
@@ -110,7 +110,7 @@ function RacesNav() {
           className={style.color}
           value={updatingValue.color}
           onChange={(val) => {
-            colorUpdatingHandler(val.target.value);
+            colorUpdatingHandler(val.target.value)
           }}
         />
         <button
@@ -120,7 +120,7 @@ function RacesNav() {
               state.selectedCar!.id,
               updatingValue.name,
               updatingValue.color
-            );
+            )
           }}
         >
           Update
@@ -132,7 +132,7 @@ function RacesNav() {
         </button>
       </div>
     </div>
-  );
+  )
 }
 
-export default RacesNav;
+export default RacesNav

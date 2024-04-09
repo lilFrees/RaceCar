@@ -1,4 +1,4 @@
-import { CarProps, ActionType } from "./types";
+import { CarProps, ActionType, RaceResult } from "./types";
 
 export interface CarState {
   cars: CarProps[];
@@ -20,12 +20,15 @@ export interface ApiContextType {
   getCars: () => Promise<CarProps[]>;
   getCar: (id: number) => Promise<CarProps>;
   getMaxPages: () => Promise<number>;
+  getCarsLength: () => Promise<number>;
   createCar: (name: string, color: string) => Promise<void>;
   create100Cars: () => void;
   deleteCar: (id: number) => Promise<void>;
   updateCar: (id: number, name: string, color: string) => Promise<void>;
   startStop: (id: number, status: "started" | "stopped") => Promise<any>;
-  drive: (id: number) => Promise<void>;
+  drive: (id: number) => Promise<{ success: boolean }>;
+  toggleCarMovement: (carId: number, shouldStart: boolean) => Promise<void>;
+  resetCars: () => void;
 }
 
 export interface StateType {
@@ -33,4 +36,6 @@ export interface StateType {
   selectedCar: CarProps | null;
   carIsSelected: boolean;
   page: number;
+  movingCars: Record<number, boolean>;
+  raceCompletionTimes: Record<number, number>;
 }
