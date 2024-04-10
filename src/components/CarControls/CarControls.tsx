@@ -4,7 +4,7 @@ import { FaPlay, FaStop } from "react-icons/fa";
 import useCars from "../../hooks/useCars";
 
 function CarControls({ car }: { car: CarProps }) {
-  const { dispatch, deleteCar, state, resetCars } = useCars();
+  const { dispatch, deleteCar, state } = useCars();
 
   return (
     <div className={style.car}>
