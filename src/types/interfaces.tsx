@@ -27,7 +27,6 @@ export interface ApiContextType {
   updateCar: (id: number, name: string, color: string) => Promise<void>;
   startStop: (id: number, status: "started" | "stopped") => Promise<any>;
   drive: (id: number) => Promise<{ success: boolean }>;
-  toggleCarMovement: (carId: number, shouldStart: boolean) => Promise<void>;
   resetCars: () => void;
 }
 

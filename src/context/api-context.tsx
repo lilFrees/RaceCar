@@ -50,15 +50,9 @@ function reducer(state: StateType, action: ActionType): StateType {
         movingCars: { ...state.movingCars, [action.payload]: true },
       };
     case "STOP_CAR":
-    case "DRIVE_CAR_FAILURE":
       return {
         ...state,
         movingCars: { ...state.movingCars, [action.payload]: false },
-      };
-    case "DRIVE_CAR_SUCCESS":
-      return {
-        ...state,
-        movingCars: { ...state.movingCars, [action.payload]: true },
       };
     case "SET_RACE_COMPLETION_TIME":
       return {
@@ -270,36 +264,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function toggleCarMovement(
-    carId: number,
-    shouldStart: boolean
-  ): Promise<void> {
-    try {
-      await startStop(carId, shouldStart ? "started" : "stopped");
-      dispatch({
-        type: shouldStart ? "START_CAR" : "STOP_CAR",
-        payload: carId,
-      });
-
-      if (shouldStart) {
-        try {
-          const result = await drive(carId);
-          if (result.success) {
-            dispatch({ type: "DRIVE_CAR_SUCCESS", payload: carId });
-          } else {
-            dispatch({ type: "DRIVE_CAR_FAILURE", payload: carId });
-          }
-        } catch (error) {
-          dispatch({ type: "DRIVE_CAR_FAILURE", payload: carId });
-        }
-      }
-    } catch (error) {
-      console.error(
-        `Failed to ${shouldStart ? "start" : "stop"} the car: ${error}`
-      );
-    }
-  }
-
   const resetCars = () => {
     dispatch({ type: "RESET_CARS" });
   };
@@ -322,7 +286,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     updateCar,
     startStop,
     drive,
-    toggleCarMovement,
     resetCars,
   };
 

@@ -4,8 +4,7 @@ import { FaPlay, FaStop } from "react-icons/fa";
 import useCars from "../../hooks/useCars";
 
 function CarControls({ car }: { car: CarProps }) {
-  const { dispatch, deleteCar, state, resetCars, toggleCarMovement } =
-    useCars();
+  const { dispatch, deleteCar, state, resetCars } = useCars();
 
   return (
     <div className={style.car}>
@@ -26,7 +25,7 @@ function CarControls({ car }: { car: CarProps }) {
           <button
             className={`${style.btn} ${style.icon}`}
             onClick={() => {
-              toggleCarMovement(car.id, true);
+              dispatch({ type: "START_CAR", payload: car.id });
             }}
           >
             <FaPlay />
@@ -42,7 +41,12 @@ function CarControls({ car }: { car: CarProps }) {
             Remove
           </button>
 
-          <button className={`${style.btn} ${style.icon}`} onClick={resetCars}>
+          <button
+            className={`${style.btn} ${style.icon}`}
+            onClick={() => {
+              dispatch({ type: "STOP_CAR", payload: car.id });
+            }}
+          >
             <FaStop />
           </button>
         </div>
