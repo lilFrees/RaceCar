@@ -1,4 +1,4 @@
-import { CarProps, ActionType, RaceResult } from "./types";
+import { CarProps, ActionType } from "./types";
 
 export interface CarState {
   cars: CarProps[];

@@ -3,13 +3,16 @@ import CarImg from "../../assets/CarImg";
 import { CarProps } from "../../types/types";
 import useCars from "../../hooks/useCars";
 import "../../animations/animations.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 function RaceTrack({ car }: { car: CarProps }) {
   const { state, startStop } = useCars();
   const isMoving = state.movingCars[car.id];
   const [racePosition, setRacePosition] = useState(0);
+  const intervalRef = useRef<number | null>(null);
+
   let duration: number = state.raceCompletionTimes[car.id];
+
   useEffect(() => {
     if (!state.raceCompletionTimes[car.id]) {
       startStop(car.id, "started").then(() => {
@@ -18,24 +21,33 @@ function RaceTrack({ car }: { car: CarProps }) {
     }
   }, [state.raceCompletionTimes]);
 
-  let interval: number;
-
   useEffect(() => {
     if (isMoving) {
-      interval = setInterval(() => {
+      intervalRef.current = setInterval(() => {
         setRacePosition((prev) => {
-          if (prev < 100) {
-            return prev + 1;
-          } else {
-            clearInterval(interval);
-            return prev;
+          const nextPosition = prev + 1;
+          if (nextPosition >= 100) {
+            if (intervalRef.current !== null) {
+              clearInterval(intervalRef.current);
+              intervalRef.current = null;
+            }
           }
+          return nextPosition;
         });
-      }, duration * 10);
-    } else if (!isMoving) {
-      clearInterval(interval);
+      }, state.raceCompletionTimes[car.id] * 10);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     }
-  }, [isMoving]);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isMoving, state.raceCompletionTimes, car.id]);
 
   return (
     <div
