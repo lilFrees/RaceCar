@@ -6,8 +6,14 @@ import { useEffect, useState } from "react";
 import { CarNavType } from "../../types/interfaces";
 
 function RacesNav() {
-  const { state, createCar, updateCar, create100Cars, startAllCars } =
-    useCars();
+  const {
+    state,
+    createCar,
+    updateCar,
+    create100Cars,
+    startAllCars,
+    resetCars,
+  } = useCars();
 
   const [updatingValue, setUpdatingValue] = useState<CarNavType>({
     name: "",
@@ -59,7 +65,7 @@ function RacesNav() {
         <button className={style.btn} onClick={startAllCars}>
           Race <CiPlay1 />
         </button>
-        <button className={style.btn}>
+        <button className={style.btn} onClick={resetCars}>
           Reset <GrPowerReset />
         </button>
       </div>

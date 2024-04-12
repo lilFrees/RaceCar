@@ -15,7 +15,7 @@ function RaceTrack({ car }: { car: CarProps }) {
 
   useEffect(() => {
     if (movingCars[car.id]) {
-      const duration = raceCompletionTimes[car.id] || 1000; // Default fallback
+      const duration = raceCompletionTimes[car.id];
       intervalRef.current = window.setInterval(() => {
         setRacePosition((prev) => {
           const nextPosition = prev + 1;
@@ -34,6 +34,15 @@ function RaceTrack({ car }: { car: CarProps }) {
           clearInterval(intervalRef.current);
         }
       };
+    } else if (
+      !(car.id in state.movingCars) &&
+      !(car.id in state.raceCompletionTimes)
+    ) {
+      setRacePosition(0);
+      dispatch({ type: "STOP_CAR", payload: car.id });
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+      }
     } else {
       if (intervalRef.current !== null) {
         clearInterval(intervalRef.current);

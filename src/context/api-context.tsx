@@ -91,7 +91,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
         `${BASE_URL}/garage?_page=${state.page}&_limit=7`
       );
       const data = (await result.json()) as CarProps[];
-      data.map((car) => (car.status = "stopped"));
       dispatch({ type: "SET_CARS", payload: data });
       return data;
     } catch (error) {
@@ -264,9 +263,9 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
   async function startAllCars() {
     console.log("Start the race");
-    const finishedCars: FinishedCar[] = [];
-    let winnerCar: FinishedCar = { id: NaN, time: 11 };
+
     const promises = state.cars.map((car) => startStop(car.id, "started"));
+    let winnerCarId: number | undefined;
     try {
       await Promise.all(promises);
 
@@ -278,23 +277,17 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
         {}
       );
 
+      // Find all cars that didn't break while switching cars to drive mode
       state.cars.map(async (car) => {
         const result = await drive(car.id);
-        if (result.success) {
-          finishedCars.push({
-            id: car.id,
-            time: state.raceCompletionTimes[car.id],
-          });
+        if (result.success && !winnerCarId) {
+          console.log(car);
+          winnerCarId = car.id;
+          setWinner(winnerCarId);
         }
       });
-      dispatch({ type: "SET_ALL_MOVING_CARS", payload: newMovingCars });
-      for (const car of finishedCars) {
-        if (car.time < winnerCar.time) {
-          winnerCar = car;
-        }
-      }
 
-      setWinner(winnerCar.id, winnerCar.time);
+      dispatch({ type: "SET_ALL_MOVING_CARS", payload: newMovingCars });
     } catch (error) {
       console.error("Error starting all cars:", error);
     }
@@ -311,7 +304,12 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function setWinner(id: number, time: number) {
+  async function setWinner(id: number) {
+    if (id === undefined) {
+      return;
+    }
+    const time = state.raceCompletionTimes;
+    console.log(time);
     try {
       const response = await fetch(`${BASE_URL}/winners`, {
         method: "POST",
@@ -319,12 +317,11 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({
           id: id,
           wins: 1,
-          time: time,
+          time: state.raceCompletionTimes[id],
         }),
       });
 
       const data = await response.json();
-      console.log(data);
       return data;
     } catch (error) {
       console.error(error);
