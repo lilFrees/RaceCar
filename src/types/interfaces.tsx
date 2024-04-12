@@ -26,8 +26,10 @@ export interface ApiContextType {
   deleteCar: (id: number) => Promise<void>;
   updateCar: (id: number, name: string, color: string) => Promise<void>;
   startStop: (id: number, status: "started" | "stopped") => Promise<any>;
+  startAllCars: () => void;
   drive: (id: number) => Promise<{ success: boolean }>;
   resetCars: () => void;
+  setWinner: (id: number, time: number) => Promise<any>;
 }
 
 export interface StateType {

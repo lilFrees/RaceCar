@@ -1,5 +1,5 @@
 import { createContext, useEffect, useReducer } from "react";
-import { CarProps } from "../types/types";
+import { CarProps, FinishedCar } from "../types/types";
 import { ApiContextType, StateType } from "../types/interfaces";
 import { ActionType } from "../types/types";
 import RandomCars from "../data/randomCars.json";
@@ -65,8 +65,13 @@ function reducer(state: StateType, action: ActionType): StateType {
     case "RESET_CARS":
       return {
         ...state,
-        movingCars: {}, // Reset moving cars state
-        raceCompletionTimes: {}, // Clear race completion times
+        movingCars: {},
+        raceCompletionTimes: {},
+      };
+    case "SET_ALL_MOVING_CARS":
+      return {
+        ...state,
+        movingCars: action.payload,
       };
     default:
       return state;
@@ -243,13 +248,55 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
       const response = await fetch(`${BASE_URL}/engine?id=${id}&status=drive`, {
         method: "PATCH",
       });
-      const result = await response.json();
 
-      console.log(result);
+      if (!response.ok) {
+        dispatch({ type: "STOP_CAR", payload: id });
+        return { success: false };
+      }
+
+      const result = await response.json();
 
       return result;
     } catch (error: string | any) {
-      console.error(error.message);
+      console.error(error);
+    }
+  }
+
+  async function startAllCars() {
+    console.log("Start the race");
+    const finishedCars: FinishedCar[] = [];
+    let winnerCar: FinishedCar = { id: NaN, time: 11 };
+    const promises = state.cars.map((car) => startStop(car.id, "started"));
+    try {
+      await Promise.all(promises);
+
+      const newMovingCars = state.cars.reduce(
+        (acc: Record<number, boolean>, car) => {
+          acc[car.id] = true;
+          return acc;
+        },
+        {}
+      );
+
+      state.cars.map(async (car) => {
+        const result = await drive(car.id);
+        if (result.success) {
+          finishedCars.push({
+            id: car.id,
+            time: state.raceCompletionTimes[car.id],
+          });
+        }
+      });
+      dispatch({ type: "SET_ALL_MOVING_CARS", payload: newMovingCars });
+      for (const car of finishedCars) {
+        if (car.time < winnerCar.time) {
+          winnerCar = car;
+        }
+      }
+
+      setWinner(winnerCar.id, winnerCar.time);
+    } catch (error) {
+      console.error("Error starting all cars:", error);
     }
   }
 
@@ -261,6 +308,26 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
     if (newPage <= maxPage && newPage >= 1) {
       dispatch({ type: "SET_PAGE", payload: newPage });
+    }
+  }
+
+  async function setWinner(id: number, time: number) {
+    try {
+      const response = await fetch(`${BASE_URL}/winners`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: id,
+          wins: 1,
+          time: time,
+        }),
+      });
+
+      const data = await response.json();
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -286,7 +353,9 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     updateCar,
     startStop,
     drive,
+    startAllCars,
     resetCars,
+    setWinner,
   };
 
   return (

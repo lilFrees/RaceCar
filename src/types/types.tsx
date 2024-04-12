@@ -5,6 +5,11 @@ export type CarProps = {
   status: "started" | "stopped" | "driving";
 };
 
+export type FinishedCar = {
+  id: number;
+  time: number;
+};
+
 export type RaceResult = {
   carId: number;
   status: "finished" | "error";
@@ -27,4 +32,5 @@ export type ActionType =
   | { type: "DRIVE_CAR_FAILURE"; payload: number }
   | { type: "DRIVE_CAR_SUCCESS"; payload: number }
   | { type: "SET_RACE_COMPLETION_TIME"; payload: { id: number; time: number } }
-  | { type: "RESET_CARS" };
+  | { type: "RESET_CARS" }
+  | { type: "SET_ALL_MOVING_CARS"; payload: Record<number, boolean> };

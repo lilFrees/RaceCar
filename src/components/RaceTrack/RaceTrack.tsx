@@ -4,63 +4,56 @@ import { CarProps } from "../../types/types";
 import useCars from "../../hooks/useCars";
 import "../../animations/animations.css";
 import { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
 
 function RaceTrack({ car }: { car: CarProps }) {
-  const { state, startStop } = useCars();
-  const isMoving = state.movingCars[car.id];
+  const { state, dispatch } = useCars();
   const [racePosition, setRacePosition] = useState(0);
   const intervalRef = useRef<number | null>(null);
 
-  let duration: number = state.raceCompletionTimes[car.id];
+  const { raceCompletionTimes, movingCars } = state;
 
   useEffect(() => {
-    if (!state.raceCompletionTimes[car.id]) {
-      startStop(car.id, "started").then(() => {
-        duration = state.raceCompletionTimes[car.id];
-      });
-    }
-  }, [state.raceCompletionTimes]);
-
-  useEffect(() => {
-    if (isMoving) {
-      intervalRef.current = setInterval(() => {
+    if (movingCars[car.id]) {
+      const duration = raceCompletionTimes[car.id] || 1000; // Default fallback
+      intervalRef.current = window.setInterval(() => {
         setRacePosition((prev) => {
           const nextPosition = prev + 1;
           if (nextPosition >= 100) {
-            if (intervalRef.current !== null) {
-              clearInterval(intervalRef.current);
-              intervalRef.current = null;
-            }
+            setTimeout(() => {
+              dispatch({ type: "STOP_CAR", payload: car.id });
+            }, 0);
+            return 100;
           }
           return nextPosition;
         });
-      }, state.raceCompletionTimes[car.id] * 10);
+      }, duration * 10);
+
+      return () => {
+        if (intervalRef.current !== null) {
+          clearInterval(intervalRef.current);
+        }
+      };
     } else {
-      if (intervalRef.current) {
+      if (intervalRef.current !== null) {
         clearInterval(intervalRef.current);
-        intervalRef.current = null;
       }
     }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isMoving, state.raceCompletionTimes, car.id]);
+  }, [car.id, movingCars, raceCompletionTimes]);
 
   return (
     <div
       className={`${style.track} ${
-        state.selectedCar?.id === car.id && style.selected
+        state.selectedCar?.id === car.id ? style.selected : ""
       }`}
     >
-      <div
+      <motion.div
         className={style.carIcon}
-        style={{ left: `calc((100% - 6rem) * ${racePosition / 100})` }}
+        animate={{ left: `calc((100% - 6rem) * ${racePosition / 100})` }}
+        transition={{ ease: (t) => t, duration: 0.1, type: "tween" }}
       >
         <CarImg color={car.color} />
-      </div>
+      </motion.div>
       <div className={style.name}>{car.name}</div>
     </div>
   );
