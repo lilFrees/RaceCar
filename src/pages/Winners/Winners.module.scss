@@ -1,0 +1,21 @@
+.container {
+  margin-inline: auto;
+  max-width: var(--container-width);
+}
+
+.props {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 0.5rem;
+  border: 1px solid yellow;
+  border-radius: 1rem;
+
+  &__item {
+    font-size: 1rem;
+  }
+}
+.list {
+  display: grid;
+  grid-auto-rows: minmax(2rem, 3rem);
+  gap: 1rem;
+}

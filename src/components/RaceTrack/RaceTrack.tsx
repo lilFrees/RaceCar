@@ -2,7 +2,6 @@ import style from "./RaceTrack.module.scss";
 import CarImg from "../../assets/CarImg";
 import { CarProps } from "../../types/types";
 import useCars from "../../hooks/useCars";
-import "../../animations/animations.css";
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 

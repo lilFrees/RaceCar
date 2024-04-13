@@ -3,14 +3,15 @@ import CarControls from "../CarControls/CarControls";
 import useCars from "../../hooks/useCars";
 import RaceTrack from "../RaceTrack/RaceTrack";
 import { CARS_PER_PAGE } from "../../context/api-context";
+import Modal from "../../Modal/Modal";
 import { CarProps } from "../../types/types";
 
 function Races() {
-  const { state, setWinner } = useCars();
-
-  const { raceCompletionTimes } = state;
-
-  const cars: CarProps[] = state.cars;
+  const { state } = useCars();
+  let winner: CarProps = { name: "undefined", id: 1, color: "#000" };
+  if (state.winnerCarId) {
+    winner = state.cars[state.winnerCarId];
+  }
 
   return (
     <div className={style.container}>
@@ -20,6 +21,13 @@ function Races() {
           <RaceTrack car={car} />
         </div>
       ))}
+      {state.showWinner && (
+        <Modal>
+          <div>Winner</div>
+          <div>Name</div>
+          <div>Time</div>
+        </Modal>
+      )}
     </div>
   );
 }

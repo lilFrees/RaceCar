@@ -11,6 +11,9 @@ const initialState: StateType = {
   page: 1,
   movingCars: {},
   raceCompletionTimes: {},
+  winnerCarId: undefined,
+  winnerCars: [],
+  showWinner: false,
 };
 
 export const CARS_PER_PAGE = 7;
@@ -73,6 +76,29 @@ function reducer(state: StateType, action: ActionType): StateType {
         ...state,
         movingCars: action.payload,
       };
+    case "SET_WINNERS":
+      return {
+        ...state,
+        winnerCars: action.payload,
+      };
+    case "SET_WINNER":
+      return {
+        ...state,
+        winnerCarId: action.payload,
+      };
+    case "ADD_WINNER":
+      return { ...state, winnerCars: [...state.winnerCars, action.payload] };
+    case "HIDE_WINNER":
+      return {
+        ...state,
+        showWinner: false,
+      };
+    case "SHOW_WINNER":
+      return {
+        ...state,
+        showWinner: true,
+      };
+
     default:
       return state;
   }
@@ -84,6 +110,8 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   const BASE_URL: string = "http://127.0.0.1:3000";
 
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  let carExists: boolean = false;
 
   async function getCars() {
     try {
@@ -263,9 +291,10 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
   async function startAllCars() {
     console.log("Start the race");
+    let winner: number | undefined = undefined;
 
     const promises = state.cars.map((car) => startStop(car.id, "started"));
-    let winnerCarId: number | undefined;
+
     try {
       await Promise.all(promises);
 
@@ -277,13 +306,19 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
         {}
       );
 
-      // Find all cars that didn't break while switching cars to drive mode
-      state.cars.map(async (car) => {
+      state.cars.forEach(async (car) => {
         const result = await drive(car.id);
-        if (result.success && !winnerCarId) {
-          console.log(car);
-          winnerCarId = car.id;
-          setWinner(winnerCarId);
+        if (result.success && winner === undefined) {
+          winner = car.id;
+          dispatch({ type: "SHOW_WINNER" });
+          if (state.winnerCars.find((veh) => veh.id === car.id)) {
+            carExists = true;
+            updateWinner(car.id, state.raceCompletionTimes[car.id]);
+            console.log("Existing car won");
+          } else {
+            dispatch({ type: "SET_WINNER", payload: car.id });
+            console.log("New Car Won");
+          }
         }
       });
 
@@ -304,21 +339,53 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function setWinner(id: number) {
+  async function getWinners(): Promise<any> {
+    try {
+      const response = await fetch(`${BASE_URL}/winners`);
+      const data = await response.json();
+
+      console.log(data);
+      dispatch({ type: "SET_WINNERS", payload: data });
+      return data;
+    } catch (error) {
+      console.error(`Failed to get winners: ${error}`);
+    }
+  }
+
+  async function getWinner(id: number): Promise<any> {
+    try {
+      const response = await fetch(`${BASE_URL}/winners/${id}`);
+      const data = await response.json();
+
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.error(`Failed to get winners: ${error}`);
+    }
+  }
+
+  async function createWinner(id: number) {
     if (id === undefined) {
       return;
     }
-    const time = state.raceCompletionTimes;
-    console.log(time);
+
+    const time: number | undefined = state.raceCompletionTimes[id];
+
+    if (time) {
+      console.log(time);
+    }
+
     try {
+      const winnerCar = JSON.stringify({
+        id: id,
+        wins: 1,
+        time: Number(time.toFixed(2)),
+      });
+
       const response = await fetch(`${BASE_URL}/winners`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: id,
-          wins: 1,
-          time: state.raceCompletionTimes[id],
-        }),
+        body: winnerCar,
       });
 
       const data = await response.json();
@@ -328,13 +395,57 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function updateWinner(id: number, time: number) {
+    const existingCar = state.winnerCars.find((car) => car.id === id);
+    carExists = false;
+    if (!existingCar) {
+      console.error(`Car doesn't exist`);
+      return;
+    }
+
+    console.log(time);
+
+    try {
+      const finishTime = time > existingCar.time ? time : existingCar.time;
+      if (time < Number(existingCar.time)) {
+        console.log("new record");
+      }
+      const response = await fetch(`${BASE_URL}/winners/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          time: finishTime,
+          wins: existingCar.wins + 1,
+        }),
+      });
+      const data = await response.json();
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.error(`Failed to update a winner ${error}`);
+    }
+  }
+
   const resetCars = () => {
     dispatch({ type: "RESET_CARS" });
   };
 
   useEffect(() => {
+    if (state.winnerCarId !== undefined) {
+      createWinner(state.winnerCarId);
+    }
+  }, [state.winnerCarId]);
+
+  useEffect(() => {
     getCars();
   }, [state.page]);
+
+  useEffect(() => {
+    getWinners();
+  }, []);
+
+  useEffect(() => {}, [carExists]);
 
   const contextValue = {
     state,
@@ -352,7 +463,10 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     drive,
     startAllCars,
     resetCars,
-    setWinner,
+    getWinners,
+    getWinner,
+    createWinner,
+    updateWinner,
   };
 
   return (

@@ -1,0 +1,23 @@
+.item {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding-inline: 0.5rem;
+  place-content: center;
+
+  &__prop {
+    width: 100%;
+    height: 100%;
+    font-size: 1.5rem;
+
+    & > svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+  }
+  .carIcon {
+    height: 2rem;
+    width: max-content;
+  }
+}

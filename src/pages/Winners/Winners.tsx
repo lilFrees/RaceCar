@@ -1,9 +1,27 @@
-import style from "./Winners.module.css";
+import { useEffect } from "react";
+import style from "./Winners.module.scss";
+import useCars from "../../hooks/useCars";
+import WinnerCar from "../../components/WinnerCar/WinnerCar";
 
 function Winners() {
+  const { getWinners, state } = useCars();
+  
+
   return (
     <div className={style.container}>
       <h1>Winners</h1>
+      <div className={style.props}>
+        <div className={style.props__item}>№</div>
+        <div className={style.props__item}>Car</div>
+        <div className={style.props__item}>Name</div>
+        <div className={style.props__item}>Wins</div>
+        <div className={style.props__item}>Best time (seconds)</div>
+      </div>
+      <div className={style.list}>
+        {state.winnerCars.map((car, i) => (
+          <WinnerCar key={i} car={car} />
+        ))}
+      </div>
     </div>
   );
 }

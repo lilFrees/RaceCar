@@ -2,11 +2,16 @@ export type CarProps = {
   name: string;
   id: number;
   color: string;
-  status: "started" | "stopped" | "driving";
 };
 
 export type FinishedCar = {
   id: number;
+  time: number;
+};
+
+export type WinnerCarProps = {
+  id: number;
+  wins: number;
   time: number;
 };
 
@@ -24,13 +29,13 @@ export type ActionType =
   | { type: "CREATE_CAR"; payload: CarProps }
   | { type: "DELETE_CAR"; payload: number }
   | { type: "SET_PAGE"; payload: number }
-  | { type: "START_RACE" }
-  | { type: "FINISH_RACE" }
-  | { type: "UPDATE_RACE_RESULT"; payload: RaceResult }
   | { type: "START_CAR"; payload: number }
   | { type: "STOP_CAR"; payload: number }
-  | { type: "DRIVE_CAR_FAILURE"; payload: number }
-  | { type: "DRIVE_CAR_SUCCESS"; payload: number }
   | { type: "SET_RACE_COMPLETION_TIME"; payload: { id: number; time: number } }
   | { type: "RESET_CARS" }
-  | { type: "SET_ALL_MOVING_CARS"; payload: Record<number, boolean> };
+  | { type: "SET_ALL_MOVING_CARS"; payload: Record<number, boolean> }
+  | { type: "SET_WINNER"; payload: number }
+  | { type: "SET_WINNERS"; payload: WinnerCarProps[] }
+  | { type: "ADD_WINNER"; payload: WinnerCarProps }
+  | { type: "SHOW_WINNER" }
+  | { type: "HIDE_WINNER" };
