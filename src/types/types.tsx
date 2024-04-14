@@ -29,6 +29,7 @@ export type ActionType =
   | { type: "CREATE_CAR"; payload: CarProps }
   | { type: "DELETE_CAR"; payload: number }
   | { type: "SET_PAGE"; payload: number }
+  | { type: "SET_WIN_PAGE"; payload: number }
   | { type: "START_CAR"; payload: number }
   | { type: "STOP_CAR"; payload: number }
   | { type: "SET_RACE_COMPLETION_TIME"; payload: { id: number; time: number } }

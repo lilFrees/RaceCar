@@ -1,9 +1,15 @@
 import style from "./Winners.module.scss";
 import useCars from "../../hooks/useCars";
 import WinnerCar from "../../components/WinnerCar/WinnerCar";
+import WinnerPagination from "../../components/WinnerPagination/WinnerPagination";
+import { useEffect } from "react";
 
 function Winners() {
-  const { state } = useCars();
+  const { state, getWinners } = useCars();
+
+  useEffect(() => {
+    getWinners();
+  }, []);
 
   return (
     <div className={style.container}>
@@ -22,6 +28,7 @@ function Winners() {
           }
         })}
       </div>
+      <WinnerPagination />
     </div>
   );
 }

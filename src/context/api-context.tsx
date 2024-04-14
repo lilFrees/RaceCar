@@ -1,5 +1,5 @@
 import { createContext, useEffect, useReducer } from "react";
-import { CarProps } from "../types/types";
+import { CarProps, WinnerCarProps } from "../types/types";
 import { ApiContextType, StateType } from "../types/interfaces";
 import { ActionType } from "../types/types";
 import RandomCars from "../data/randomCars.json";
@@ -9,6 +9,7 @@ const initialState: StateType = {
   selectedCar: null,
   carIsSelected: false,
   page: 1,
+  winnerPage: 1,
   movingCars: {},
   raceCompletionTimes: {},
   winnerCarId: undefined,
@@ -46,6 +47,11 @@ function reducer(state: StateType, action: ActionType): StateType {
       return {
         ...state,
         page: action.payload,
+      };
+    case "SET_WIN_PAGE":
+      return {
+        ...state,
+        winnerPage: action.payload,
       };
     case "START_CAR":
       return {
@@ -110,17 +116,17 @@ function reducer(state: StateType, action: ActionType): StateType {
   }
 }
 
+export const BASE_URL: string = "http://127.0.0.1:3000";
+
 export const ApiContext = createContext<ApiContextType | null>(null);
 
 export function ApiProvider({ children }: { children: React.ReactNode }) {
-  const BASE_URL: string = "http://127.0.0.1:3000";
-
   const [state, dispatch] = useReducer(reducer, initialState);
 
   async function getCars() {
     try {
       const result = await fetch(
-        `${BASE_URL}/garage?_page=${state.page}&_limit=7`
+        `${BASE_URL}/garage?_page=${state.page}&_limit=${CARS_PER_PAGE}`
       );
       const data = (await result.json()) as CarProps[];
       dispatch({ type: "SET_CARS", payload: data });
@@ -140,9 +146,9 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function getMaxPages(): Promise<number> {
+  async function getMaxPagesForWinners(): Promise<number> {
     try {
-      const request = await fetch(`${BASE_URL}/garage`);
+      const request = await fetch(`${BASE_URL}/winner`);
       const data = await request.json();
 
       const maxPages = Math.floor((data as CarProps[]).length / 7) + 1;
@@ -158,6 +164,18 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
       const data = await request.json();
 
       const length = (data as CarProps[]).length;
+      return length;
+    } catch (error) {
+      throw new Error("Failed to get max pages");
+    }
+  }
+
+  async function getWinnersLength(): Promise<number> {
+    try {
+      const request = await fetch(`${BASE_URL}/winners`);
+      const data = await request.json();
+
+      const length = (data as WinnerCarProps[]).length;
       return length;
     } catch (error) {
       throw new Error("Failed to get max pages");
@@ -337,9 +355,36 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function getWinners(): Promise<any> {
+  async function setWinnerPage(newPage: number) {
+    console.log(newPage);
+    const request = await fetch(`${BASE_URL}/winners`);
+    const response = await request.json();
+
+    const maxPage = Math.floor(response.length / 10);
+
+    if (newPage <= maxPage && newPage >= 1) {
+      dispatch({ type: "SET_WIN_PAGE", payload: newPage });
+    }
+  }
+
+  async function getMaxPages(): Promise<number> {
     try {
-      const response = await fetch(`${BASE_URL}/winners`);
+      const request = await fetch(`${BASE_URL}/winners`);
+      const data = await request.json();
+
+      const maxPages = Math.floor((data as WinnerCarProps[]).length / 10) + 1;
+      return maxPages;
+    } catch (error) {
+      throw new Error("Failed to get max pages");
+    }
+  }
+
+  async function getWinners(): Promise<any> {
+    console.log(state.winnerPage);
+    try {
+      const response = await fetch(
+        `${BASE_URL}/winners?_page=${state.winnerPage}&_limit=10`
+      );
       const data = await response.json();
 
       dispatch({ type: "SET_WINNERS", payload: data });
@@ -434,14 +479,19 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     getCars();
   }, [state.page]);
 
+  useEffect(() => {
+    getWinners();
+  }, [state.winnerPage]);
+
   const contextValue = {
     state,
     dispatch,
     setPage,
+    setWinnerPage,
     getCars,
     getCar,
-    getMaxPages,
     getCarsLength,
+    getWinnersLength,
     createCar,
     create100Cars,
     deleteCar,
@@ -450,8 +500,10 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     drive,
     startAllCars,
     resetCars,
+    getMaxPages,
     getWinners,
     getWinner,
+    getMaxPagesForWinners,
     createWinner,
     updateWinner,
   };

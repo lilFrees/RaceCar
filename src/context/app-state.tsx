@@ -21,14 +21,25 @@ export const AppStateProvider = ({
   function racePositionHandler(id: number, value: number): void;
   function racePositionHandler(id: number, value: () => number): void;
 
-  function racePositionHandler(id: number, value: number | (() => number)) {
+  function racePositionHandler(
+    id: number,
+    value: number | (() => number)
+  ): void {
     if (typeof value === "number") {
+      if (value === 0) {
+        delete appState.racePositions[id];
+        return;
+      }
       setAppState({
         ...appState,
         racePositions: { ...appState.racePositions, [id]: value },
       });
     } else {
       const nextVal = value();
+      if (nextVal === 0) {
+        delete appState.racePositions[id];
+        return;
+      }
       setAppState({
         ...appState,
         racePositions: { ...appState.racePositions, [id]: nextVal },

@@ -19,8 +19,6 @@ export interface ApiContextType {
   dispatch: React.Dispatch<ActionType>;
   getCars(): Promise<CarProps[]>;
   getCar(id: number): Promise<CarProps>;
-  getMaxPages(): Promise<number>;
-  getCarsLength(): Promise<number>;
   createCar(name: string, color: string): Promise<void>;
   create100Cars(): void;
   deleteCar(id: number): Promise<void>;
@@ -33,6 +31,9 @@ export interface ApiContextType {
   getWinner(id: number): Promise<any>;
   createWinner(id: number, time: number): Promise<any>;
   updateWinner(id: number, time: number): Promise<any>;
+  getMaxPagesForWinners(): Promise<number>;
+  getWinnersLength(): Promise<number>;
+  getCarsLength(): Promise<number>;
 }
 
 export interface StateType {
@@ -41,6 +42,7 @@ export interface StateType {
   carIsSelected: boolean;
   winnerCarId: number | undefined;
   page: number;
+  winnerPage: number;
   movingCars: Record<number, boolean>;
   raceCompletionTimes: Record<number, number>;
   winnerCars: WinnerCarProps[];
