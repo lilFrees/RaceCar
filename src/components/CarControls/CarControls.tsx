@@ -48,6 +48,7 @@ function CarControls({ car }: { car: CarProps }) {
             className={`${style.btn} ${style.icon}`}
             onClick={() => {
               dispatch({ type: "STOP_CAR", payload: car.id });
+              dispatch({ type: "RESET_CAR", payload: car.id });
             }}
           >
             <FaStop />

@@ -1,11 +1,9 @@
-import { useEffect } from "react";
 import style from "./Winners.module.scss";
 import useCars from "../../hooks/useCars";
 import WinnerCar from "../../components/WinnerCar/WinnerCar";
 
 function Winners() {
-  const { getWinners, state } = useCars();
-  
+  const { state } = useCars();
 
   return (
     <div className={style.container}>

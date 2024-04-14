@@ -14,7 +14,7 @@ function WinnerCar({ car }: { car: WinnerCarProps }) {
       </div>
       <div className={style.item__prop}>{carInfo?.name}</div>
       <div className={style.item__prop}>{car.wins}</div>
-      <div className={style.item__prop}>{car.time}</div>
+      <div className={style.item__prop}>{car.time.toFixed(2)}</div>
     </div>
   );
 }

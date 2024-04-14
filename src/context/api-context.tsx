@@ -1,5 +1,5 @@
 import { createContext, useEffect, useReducer } from "react";
-import { CarProps, FinishedCar } from "../types/types";
+import { CarProps } from "../types/types";
 import { ApiContextType, StateType } from "../types/interfaces";
 import { ActionType } from "../types/types";
 import RandomCars from "../data/randomCars.json";
@@ -71,6 +71,12 @@ function reducer(state: StateType, action: ActionType): StateType {
         movingCars: {},
         raceCompletionTimes: {},
       };
+    case "RESET_CAR":
+      delete state.movingCars[action.payload];
+      delete state.raceCompletionTimes[action.payload];
+      return {
+        ...state,
+      };
     case "SET_ALL_MOVING_CARS":
       return {
         ...state,
@@ -110,8 +116,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   const BASE_URL: string = "http://127.0.0.1:3000";
 
   const [state, dispatch] = useReducer(reducer, initialState);
-
-  let carExists: boolean = false;
 
   async function getCars() {
     try {
@@ -311,14 +315,8 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
         if (result.success && winner === undefined) {
           winner = car.id;
           dispatch({ type: "SHOW_WINNER" });
-          if (state.winnerCars.find((veh) => veh.id === car.id)) {
-            carExists = true;
-            updateWinner(car.id, state.raceCompletionTimes[car.id]);
-            console.log("Existing car won");
-          } else {
-            dispatch({ type: "SET_WINNER", payload: car.id });
-            console.log("New Car Won");
-          }
+          getWinners();
+          dispatch({ type: "SET_WINNER", payload: car.id });
         }
       });
 
@@ -344,7 +342,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
       const response = await fetch(`${BASE_URL}/winners`);
       const data = await response.json();
 
-      console.log(data);
       dispatch({ type: "SET_WINNERS", payload: data });
       return data;
     } catch (error) {
@@ -371,10 +368,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
     const time: number | undefined = state.raceCompletionTimes[id];
 
-    if (time) {
-      console.log(time);
-    }
-
     try {
       const winnerCar = JSON.stringify({
         id: id,
@@ -397,19 +390,15 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
   async function updateWinner(id: number, time: number) {
     const existingCar = state.winnerCars.find((car) => car.id === id);
-    carExists = false;
     if (!existingCar) {
       console.error(`Car doesn't exist`);
       return;
     }
-
-    console.log(time);
+    console.log(existingCar.time, time);
 
     try {
-      const finishTime = time > existingCar.time ? time : existingCar.time;
-      if (time < Number(existingCar.time)) {
-        console.log("new record");
-      }
+      const finishTime = Math.min(existingCar.time, time);
+      console.log(finishTime);
       const response = await fetch(`${BASE_URL}/winners/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -420,7 +409,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
         }),
       });
       const data = await response.json();
-      console.log(data);
       return data;
     } catch (error) {
       console.error(`Failed to update a winner ${error}`);
@@ -433,19 +421,19 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (state.winnerCarId !== undefined) {
-      createWinner(state.winnerCarId);
+      if (state.winnerCars.find((veh) => veh.id === state.winnerCarId)) {
+        const timeFinished = state.raceCompletionTimes[state.winnerCarId];
+        updateWinner(state.winnerCarId, timeFinished);
+      } else {
+        createWinner(state.winnerCarId);
+      }
     }
+    getWinners();
   }, [state.winnerCarId]);
 
   useEffect(() => {
     getCars();
   }, [state.page]);
-
-  useEffect(() => {
-    getWinners();
-  }, []);
-
-  useEffect(() => {}, [carExists]);
 
   const contextValue = {
     state,

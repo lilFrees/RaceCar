@@ -33,6 +33,7 @@ export type ActionType =
   | { type: "STOP_CAR"; payload: number }
   | { type: "SET_RACE_COMPLETION_TIME"; payload: { id: number; time: number } }
   | { type: "RESET_CARS" }
+  | { type: "RESET_CAR"; payload: number }
   | { type: "SET_ALL_MOVING_CARS"; payload: Record<number, boolean> }
   | { type: "SET_WINNER"; payload: number }
   | { type: "SET_WINNERS"; payload: WinnerCarProps[] }
