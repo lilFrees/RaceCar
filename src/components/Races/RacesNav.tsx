@@ -2,8 +2,8 @@ import style from "./RacesNav.module.scss";
 import { CiPlay1 } from "react-icons/ci";
 import { GrPowerReset } from "react-icons/gr";
 import useCars from "../../hooks/useCars";
-import { useEffect, useState } from "react";
-import { CarNavType } from "../../types/interfaces";
+import { useEffect } from "react";
+import { useAppState } from "../../context/app-state";
 
 function RacesNav() {
   const {
@@ -15,46 +15,48 @@ function RacesNav() {
     resetCars,
   } = useCars();
 
-  const [updatingValue, setUpdatingValue] = useState<CarNavType>({
-    name: "",
-    color: "#000000",
-  });
+  const { appState, setAppState } = useAppState();
 
   function nameUpdatingHandler(value: string) {
     if (state.carIsSelected) {
-      setUpdatingValue({ ...updatingValue, name: value });
+      // setUpdatingValue({ ...updatingValue, name: value });
+      setAppState({ ...appState, updateValue: value });
     }
   }
 
   function colorUpdatingHandler(value: string) {
     if (state.carIsSelected) {
-      setUpdatingValue({ ...updatingValue, color: value });
+      // setUpdatingValue({ ...updatingValue, color: value });
+      setAppState({ ...appState, updateColor: value });
     }
   }
 
-  const [creatingValue, setCreatingValue] = useState<CarNavType>({
-    name: "",
-    color: "#000000",
-  });
-
   function nameCreatingValue(value: string) {
-    setCreatingValue({ ...creatingValue, name: value });
+    // setCreatingValue({ ...creatingValue, name: value });
+    setAppState({ ...appState, createValue: value });
   }
 
   function colorCreatingValue(value: string) {
-    setCreatingValue({ ...creatingValue, color: value });
+    // setCreatingValue({ ...creatingValue, color: value });
+    setAppState({ ...appState, createColor: value });
   }
 
   useEffect(() => {
     if (state.carIsSelected) {
-      setUpdatingValue({
-        name: state.selectedCar!.name,
-        color: state.selectedCar!.color,
+      setAppState({
+        ...appState,
+        updateValue: appState.updateValue
+          ? appState.updateValue
+          : state.selectedCar!.name,
+        updateColor: appState.updateColor
+          ? appState.updateColor
+          : state.selectedCar!.color,
       });
     } else {
-      setUpdatingValue({
-        name: "",
-        color: "#000000",
+      setAppState({
+        ...appState,
+        updateValue: "",
+        updateColor: "",
       });
     }
   }, [state.selectedCar]);
@@ -75,7 +77,7 @@ function RacesNav() {
           max={20}
           className={style.input}
           placeholder="TYPE CAR BRAND"
-          value={creatingValue.name}
+          value={appState.createValue}
           onChange={(val) => {
             nameCreatingValue(val.target.value);
           }}
@@ -83,7 +85,7 @@ function RacesNav() {
         <input
           type="color"
           className={style.color}
-          value={creatingValue.color}
+          value={appState.createColor || "#000000"}
           onChange={(val) => {
             colorCreatingValue(val.target.value);
           }}
@@ -91,10 +93,11 @@ function RacesNav() {
         <button
           className={style.btn}
           onClick={() => {
-            createCar(creatingValue.name, creatingValue.color);
-            setCreatingValue({
-              name: "",
-              color: "#000000",
+            createCar(appState.createValue, appState.createColor);
+            setAppState({
+              ...appState,
+              createValue: "",
+              createColor: "#000000",
             });
           }}
         >
@@ -107,7 +110,7 @@ function RacesNav() {
           max={20}
           className={style.input}
           placeholder="TYPE CAR BRAND"
-          value={updatingValue.name}
+          value={appState.updateValue}
           onChange={(val) => {
             nameUpdatingHandler(val.target.value);
           }}
@@ -115,7 +118,7 @@ function RacesNav() {
         <input
           type="color"
           className={style.color}
-          value={updatingValue.color}
+          value={appState.updateColor || "#000000"}
           onChange={(val) => {
             colorUpdatingHandler(val.target.value);
           }}
@@ -125,8 +128,8 @@ function RacesNav() {
           onClick={() => {
             updateCar(
               state.selectedCar!.id,
-              updatingValue.name,
-              updatingValue.color
+              appState.updateValue,
+              appState.updateColor
             );
           }}
         >

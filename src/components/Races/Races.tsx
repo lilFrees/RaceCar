@@ -18,11 +18,15 @@ function Races() {
           <RaceTrack car={car} />
         </div>
       ))}
-      {state.showWinner && winnerId !== undefined && (
+      {state.showWinner && typeof winnerId !== "undefined" && (
         <Modal>
-          <div>Winner</div>
-          <div>{state.cars[winnerId].name}</div>
-          <div>{state.winnerCars[winnerId].time}</div>
+          <div className={style.winner}>Winner</div>
+          <div className={style.name}>
+            {state.cars.find((veh) => veh.id === winnerId)?.name}
+          </div>
+          <div className={style.time}>
+            {state.raceCompletionTimes[winnerId].toFixed(2)}s
+          </div>
         </Modal>
       )}
     </div>

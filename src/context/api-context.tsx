@@ -394,7 +394,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
       console.error(`Car doesn't exist`);
       return;
     }
-    console.log(existingCar.time, time);
 
     try {
       const finishTime = Math.min(existingCar.time, time);

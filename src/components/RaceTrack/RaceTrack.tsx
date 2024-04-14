@@ -4,13 +4,19 @@ import { CarProps } from "../../types/types";
 import useCars from "../../hooks/useCars";
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { useAppState } from "../../context/app-state";
 
 function RaceTrack({ car }: { car: CarProps }) {
   const { state, dispatch } = useCars();
   const [racePosition, setRacePosition] = useState(0);
   const intervalRef = useRef<number | null>(null);
+  const { racePositionHandler, appState } = useAppState();
 
   const { raceCompletionTimes, movingCars } = state;
+
+  useEffect(() => {
+    racePositionHandler(car.id, racePosition);
+  }, [racePosition]);
 
   useEffect(() => {
     if (movingCars[car.id]) {
@@ -57,7 +63,13 @@ function RaceTrack({ car }: { car: CarProps }) {
     >
       <motion.div
         className={style.carIcon}
-        animate={{ left: `calc((100% - 6rem) * ${racePosition / 100})` }}
+        animate={{
+          left: `calc((100% - 6rem) * ${
+            (appState.racePositions[car.id]
+              ? appState.racePositions[car.id]
+              : racePosition) / 100
+          })`,
+        }}
         transition={{ ease: (t) => t, duration: 0.1, type: "tween" }}
       >
         <CarImg color={car.color} />

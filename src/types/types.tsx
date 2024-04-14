@@ -4,10 +4,10 @@ export type CarProps = {
   color: string;
 };
 
-export type FinishedCar = {
-  id: number;
-  time: number;
-};
+// export type FinishedCar = {
+//   id: number;
+//   time: number;
+// };
 
 export type WinnerCarProps = {
   id: number;
@@ -40,3 +40,12 @@ export type ActionType =
   | { type: "ADD_WINNER"; payload: WinnerCarProps }
   | { type: "SHOW_WINNER" }
   | { type: "HIDE_WINNER" };
+
+export type AppState = {
+  createValue: string;
+  createColor: string;
+  updateValue: string;
+  updateColor: string;
+  racePositions: Record<number, number>;
+  page: number;
+};

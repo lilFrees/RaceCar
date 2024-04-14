@@ -16,9 +16,11 @@ function Winners() {
         <div className={style.props__item}>Best time (seconds)</div>
       </div>
       <div className={style.list}>
-        {state.winnerCars.map((car, i) => (
-          <WinnerCar key={i} car={car} />
-        ))}
+        {state.winnerCars.map((car, i) => {
+          if (state.cars.find((veh) => veh.id === car.id)) {
+            return <WinnerCar key={i} car={car} />;
+          }
+        })}
       </div>
     </div>
   );

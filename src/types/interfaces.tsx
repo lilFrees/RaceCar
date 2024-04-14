@@ -1,4 +1,4 @@
-import { CarProps, ActionType, WinnerCarProps } from "./types";
+import { CarProps, ActionType, WinnerCarProps, AppState } from "./types";
 
 export interface CarState {
   cars: CarProps[];
@@ -45,4 +45,11 @@ export interface StateType {
   raceCompletionTimes: Record<number, number>;
   winnerCars: WinnerCarProps[];
   showWinner: boolean;
+}
+
+export interface AppStateContextValue {
+  appState: AppState;
+  setAppState: React.Dispatch<React.SetStateAction<AppState>>;
+  racePositionHandler(id: number, value: number): void;
+  racePositionHandler(id: number, value: number | (() => number)): void;
 }
