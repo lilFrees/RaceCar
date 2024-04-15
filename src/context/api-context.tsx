@@ -148,10 +148,10 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
   async function getMaxPagesForWinners(): Promise<number> {
     try {
-      const request = await fetch(`${BASE_URL}/winner`);
+      const request = await fetch(`${BASE_URL}/winners`);
       const data = await request.json();
 
-      const maxPages = Math.floor((data as CarProps[]).length / 7) + 1;
+      const maxPages = Math.floor((data as WinnerCarProps[]).length / 100) + 1;
       return maxPages;
     } catch (error) {
       throw new Error("Failed to get max pages");
@@ -380,11 +380,8 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function getWinners(): Promise<any> {
-    console.log(state.winnerPage);
     try {
-      const response = await fetch(
-        `${BASE_URL}/winners?_page=${state.winnerPage}&_limit=10`
-      );
+      const response = await fetch(`${BASE_URL}/winners?_page=${1}&_limit=10`);
       const data = await response.json();
 
       dispatch({ type: "SET_WINNERS", payload: data });
@@ -459,6 +456,18 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function deleteWinner(id: number): Promise<any> {
+    try {
+      const response = await fetch(`${BASE_URL}/winners/${id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to delete the winner");
+    }
+  }
+
   const resetCars = () => {
     dispatch({ type: "RESET_CARS" });
   };
@@ -506,6 +515,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     getMaxPagesForWinners,
     createWinner,
     updateWinner,
+    deleteWinner,
   };
 
   return (

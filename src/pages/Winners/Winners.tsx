@@ -5,7 +5,7 @@ import WinnerPagination from "../../components/WinnerPagination/WinnerPagination
 import { useEffect } from "react";
 
 function Winners() {
-  const { state, getWinners } = useCars();
+  const { state, getWinners, deleteWinner } = useCars();
 
   useEffect(() => {
     getWinners();
@@ -25,6 +25,8 @@ function Winners() {
         {state.winnerCars.map((car, i) => {
           if (state.cars.find((veh) => veh.id === car.id)) {
             return <WinnerCar key={i} car={car} />;
+          } else {
+            deleteWinner(car.id);
           }
         })}
       </div>

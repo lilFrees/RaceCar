@@ -5,35 +5,36 @@ import useCars from "../../hooks/useCars";
 import { useEffect, useState } from "react";
 
 function WinnerPagination() {
-  const { state, dispatch, getMaxPages, getCarsLength } = useCars();
+  const { state, dispatch, getMaxPagesForWinners, getWinnersLength } =
+    useCars();
 
   const [length, setLength] = useState(0);
 
   const getLength = async () => {
-    const n = await getCarsLength();
+    const n = await getWinnersLength();
     setLength(n);
   };
 
   useEffect(() => {
     getLength();
-  }, [state.cars]);
+  }, [state.winnerCars]);
 
   async function nextPage() {
-    const maxPage = await getMaxPages();
-    if (state.page < maxPage) {
-      dispatch({ type: "SET_WIN_PAGE", payload: state.page + 1 });
+    const maxPage = await getMaxPagesForWinners();
+    if (state.winnerPage < maxPage) {
+      dispatch({ type: "SET_WIN_PAGE", payload: state.winnerPage + 1 });
     }
   }
 
   function previousPage() {
-    if (state.page > 1) {
-      dispatch({ type: "SET_WIN_PAGE", payload: state.page - 1 });
+    if (state.winnerPage > 1) {
+      dispatch({ type: "SET_WIN_PAGE", payload: state.winnerPage - 1 });
     }
   }
 
   return (
     <div className={style.pages}>
-      <div className={style.info}>Garage ({length})</div>
+      <div className={style.info}>Winners ({length})</div>
       <div className={style.pagination}>
         <button
           className={`${style.pagesBtn} ${style.prev}`}
@@ -41,7 +42,7 @@ function WinnerPagination() {
         >
           <MdOutlineSkipPrevious />
         </button>
-        <div className={style.pagesNumber}>{state.page}</div>
+        <div className={style.pagesNumber}>{state.winnerPage}</div>
         <button
           className={`${style.pagesBtn} ${style.next}`}
           onClick={nextPage}

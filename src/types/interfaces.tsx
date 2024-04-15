@@ -31,6 +31,7 @@ export interface ApiContextType {
   getWinner(id: number): Promise<any>;
   createWinner(id: number, time: number): Promise<any>;
   updateWinner(id: number, time: number): Promise<any>;
+  deleteWinner(id: number): Promise<any>;
   getMaxPagesForWinners(): Promise<number>;
   getWinnersLength(): Promise<number>;
   getCarsLength(): Promise<number>;
