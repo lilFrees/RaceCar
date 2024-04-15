@@ -381,7 +381,9 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
   async function getWinners(): Promise<any> {
     try {
-      const response = await fetch(`${BASE_URL}/winners?_page=${1}&_limit=10`);
+      const response = await fetch(
+        `${BASE_URL}/winners?_limit=10&_page=${state.winnerPage}`
+      );
       const data = await response.json();
 
       dispatch({ type: "SET_WINNERS", payload: data });
@@ -424,9 +426,11 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
       });
 
       const data = await response.json();
+      await dispatch({ type: "SET_WINNER", payload: undefined });
+
       return data;
     } catch (error) {
-      console.error(error);
+      console.error("Failed to create a winner " + error);
     }
   }
 
@@ -450,6 +454,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
         }),
       });
       const data = await response.json();
+
       return data;
     } catch (error) {
       console.error(`Failed to update a winner ${error}`);

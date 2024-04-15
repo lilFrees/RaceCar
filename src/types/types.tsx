@@ -36,7 +36,7 @@ export type ActionType =
   | { type: "RESET_CARS" }
   | { type: "RESET_CAR"; payload: number }
   | { type: "SET_ALL_MOVING_CARS"; payload: Record<number, boolean> }
-  | { type: "SET_WINNER"; payload: number }
+  | { type: "SET_WINNER"; payload: number | undefined }
   | { type: "SET_WINNERS"; payload: WinnerCarProps[] }
   | { type: "ADD_WINNER"; payload: WinnerCarProps }
   | { type: "SHOW_WINNER" }

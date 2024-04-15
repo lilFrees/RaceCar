@@ -7,6 +7,10 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ children }) => {
+  const { state } = useCars();
+  if (!state.winnerCarId) {
+    return null;
+  }
   const { dispatch } = useCars();
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
