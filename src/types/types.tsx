@@ -40,7 +40,11 @@ export type ActionType =
   | { type: "SET_WINNERS"; payload: WinnerCarProps[] }
   | { type: "ADD_WINNER"; payload: WinnerCarProps }
   | { type: "SHOW_WINNER" }
-  | { type: "HIDE_WINNER" };
+  | { type: "HIDE_WINNER" }
+  | {
+      type: "SET_STATUS";
+      payload: "stopped" | "race" | "finished" | "loading";
+    };
 
 export type AppState = {
   createValue: string;

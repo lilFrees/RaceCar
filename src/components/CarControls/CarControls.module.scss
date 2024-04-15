@@ -40,8 +40,20 @@
       padding: 0;
     }
   }
-  .disabled {
-    border-color: 1px solid #979797;
+  .disabledBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: 1px solid #ff0000;
+    color: #ff0000;
+    font-family: inherit;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.2s all;
+    text-transform: uppercase;
+    height: 2rem;
+    width: 6rem;
   }
 }
 

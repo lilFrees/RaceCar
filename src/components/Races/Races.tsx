@@ -18,7 +18,8 @@ function Races() {
           <RaceTrack car={car} />
         </div>
       ))}
-      {state.showWinner &&
+      {state.status === "finished" &&
+        state.showWinner &&
         state.winnerCarId &&
         typeof winnerId !== "undefined" && (
           <Modal>

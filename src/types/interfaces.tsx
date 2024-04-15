@@ -48,6 +48,7 @@ export interface StateType {
   raceCompletionTimes: Record<number, number>;
   winnerCars: WinnerCarProps[];
   showWinner: boolean;
+  status: "stopped" | "race" | "finished" | "loading";
 }
 
 export interface AppStateContextValue {

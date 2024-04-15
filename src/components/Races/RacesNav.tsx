@@ -64,10 +64,25 @@ function RacesNav() {
   return (
     <div className={style.nav}>
       <div className={style.nav__item}>
-        <button className={style.btn} onClick={startAllCars}>
+        <button
+          className={
+            state.status !== "loading" && state.status !== "race"
+              ? style.btn
+              : style.disabledBtn
+          }
+          onClick={() => {
+            if (state.status !== "loading" && state.status !== "race")
+              startAllCars();
+          }}
+        >
           Race <CiPlay1 />
         </button>
-        <button className={style.btn} onClick={resetCars}>
+        <button
+          className={state.status !== "loading" ? style.btn : style.disabledBtn}
+          onClick={() => {
+            if (state.status !== "stopped") resetCars();
+          }}
+        >
           Reset <GrPowerReset />
         </button>
       </div>

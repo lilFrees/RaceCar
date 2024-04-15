@@ -15,6 +15,7 @@ const initialState: StateType = {
   winnerCarId: undefined,
   winnerCars: [],
   showWinner: false,
+  status: "stopped",
 };
 
 export const CARS_PER_PAGE = 7;
@@ -110,6 +111,11 @@ function reducer(state: StateType, action: ActionType): StateType {
         ...state,
         showWinner: true,
       };
+    case "SET_STATUS":
+      return {
+        ...state,
+        status: action.payload,
+      };
 
     default:
       return state;
@@ -124,12 +130,16 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   async function getCars() {
+    dispatch({ type: "SET_STATUS", payload: "loading" });
+
     try {
       const result = await fetch(
         `${BASE_URL}/garage?_page=${state.page}&_limit=${CARS_PER_PAGE}`
       );
       const data = (await result.json()) as CarProps[];
       dispatch({ type: "SET_CARS", payload: data });
+      dispatch({ type: "SET_STATUS", payload: "stopped" });
+
       return data;
     } catch (error) {
       throw new Error("Failed to get cars: " + error);
@@ -314,11 +324,13 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   async function startAllCars() {
     console.log("Start the race");
     let winner: number | undefined = undefined;
+    dispatch({ type: "SET_STATUS", payload: "loading" });
 
     const promises = state.cars.map((car) => startStop(car.id, "started"));
 
     try {
       await Promise.all(promises);
+      await dispatch({ type: "SET_STATUS", payload: "race" });
 
       const newMovingCars = state.cars.reduce(
         (acc: Record<number, boolean>, car) => {
@@ -335,6 +347,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
           dispatch({ type: "SHOW_WINNER" });
           getWinners();
           dispatch({ type: "SET_WINNER", payload: car.id });
+          dispatch({ type: "SET_STATUS", payload: "finished" });
         }
       });
 
@@ -473,8 +486,17 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const resetCars = () => {
+  const resetCars = async () => {
+    dispatch({ type: "SET_STATUS", payload: "loading" });
     dispatch({ type: "RESET_CARS" });
+    const promises = state.cars.map((car) => startStop(car.id, "stopped"));
+
+    try {
+      await Promise.all(promises);
+      await dispatch({ type: "SET_STATUS", payload: "stopped" });
+    } catch (error) {
+      console.error("Failed to stop the cars " + error);
+    }
   };
 
   useEffect(() => {
