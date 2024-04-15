@@ -1,5 +1,5 @@
 https://async-race-internship.netlify.app/
-
+# 405 points
 ## Checklist
 
 ## 🚀 UI Deployment
@@ -77,7 +77,7 @@ https://async-race-internship.netlify.app/
 
 ## ✅ Code Quality and Standards (15 points)
 
-- [x] **Eslint with Airbnb Style Guide (15 points):** Code must adhere to the Airbnb ESLint configuration to maintain code quality, as outlined in the [Airbnb style guide](https://www.npmjs.com/package/eslint-config-airbnb). Specific rules may be adjusted only with mentor approval, and there should be no ESLint errors or warnings.
+- [] **Eslint with Airbnb Style Guide (15 points):** Code must adhere to the Airbnb ESLint configuration to maintain code quality, as outlined in the [Airbnb style guide](https://www.npmjs.com/package/eslint-config-airbnb). Specific rules may be adjusted only with mentor approval, and there should be no ESLint errors or warnings.
 
 ## 📏 Code Organization and Efficiency (15 points)
 
