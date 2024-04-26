@@ -3,6 +3,7 @@ import { CarProps, WinnerCarProps } from "../types/types";
 import { ApiContextType, StateType } from "../types/interfaces";
 import { ActionType } from "../types/types";
 import RandomCars from "../data/randomCars.json";
+import { useFetch } from "../hooks/useFetch";
 
 const initialState: StateType = {
   cars: [],
@@ -132,85 +133,54 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   async function getCars() {
     dispatch({ type: "SET_STATUS", payload: "loading" });
 
-    try {
-      const result = await fetch(
-        `${BASE_URL}/garage?_page=${state.page}&_limit=${CARS_PER_PAGE}`
-      );
-      const data = (await result.json()) as CarProps[];
-      dispatch({ type: "SET_CARS", payload: data });
-      dispatch({ type: "SET_STATUS", payload: "stopped" });
+    const result = await useFetch(
+      `${BASE_URL}/garage?_page=${state.page}&_limit=${CARS_PER_PAGE}`
+    );
+    dispatch({ type: "SET_CARS", payload: result });
+    dispatch({ type: "SET_STATUS", payload: "stopped" });
 
-      return data;
-    } catch (error) {
-      throw new Error("Failed to get cars: " + error);
-    }
+    return result;
   }
 
-  async function getCar(id: number) {
-    try {
-      const result = await fetch(`${BASE_URL}/garage/${id}`);
-      const data = await result.json();
-      return data;
-    } catch (error) {
-      throw new Error(`Cannot get cars with the id ${id}: ` + error);
-    }
+  async function getCar(id: number): Promise<CarProps> {
+    const result = await useFetch(`${BASE_URL}/garage/${id}`);
+    return result;
   }
 
   async function getMaxPagesForWinners(): Promise<number> {
-    try {
-      const request = await fetch(`${BASE_URL}/winners`);
-      const data = await request.json();
+    const result = await useFetch(`${BASE_URL}/winners`);
 
-      const maxPages = Math.floor((data as WinnerCarProps[]).length / 100) + 1;
-      return maxPages;
-    } catch (error) {
-      throw new Error("Failed to get max pages");
-    }
+    const maxPages = Math.floor((result as WinnerCarProps[]).length / 10) + 1;
+    return maxPages;
   }
 
   async function getCarsLength(): Promise<number> {
-    try {
-      const request = await fetch(`${BASE_URL}/garage`);
-      const data = await request.json();
-
-      const length = (data as CarProps[]).length;
-      return length;
-    } catch (error) {
-      throw new Error("Failed to get max pages");
-    }
+    const result = await useFetch(`${BASE_URL}/garage`);
+    const length = (result as CarProps[]).length;
+    return length;
   }
 
   async function getWinnersLength(): Promise<number> {
-    try {
-      const request = await fetch(`${BASE_URL}/winners`);
-      const data = await request.json();
+    const result = await useFetch(`${BASE_URL}/winners`);
+    const length = (result as WinnerCarProps[]).length;
 
-      const length = (data as WinnerCarProps[]).length;
-      return length;
-    } catch (error) {
-      throw new Error("Failed to get max pages");
-    }
+    return length;
   }
 
   async function createCar(name: string, color: string) {
-    try {
-      const result = await fetch(`${BASE_URL}/garage`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, color }),
-      });
-      const data = await result.json();
-      dispatch({ type: "CREATE_CAR", payload: data });
-    } catch (error) {
-      throw new Error("Failed to create a car: " + error);
-    }
+    const result = await useFetch(`${BASE_URL}/garage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, color }),
+    });
+
+    dispatch({ type: "CREATE_CAR", payload: result });
   }
 
   async function create100Cars() {
-    const cars: string[] = RandomCars.cars;
-    const models: string[] = RandomCars.models;
+    const brands = RandomCars.brands;
 
     function randomColor() {
       const randomColor = Math.floor(Math.random() * 16777215)
@@ -221,9 +191,10 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
 
     function randomCar() {
-      const car = cars[Math.floor(Math.random() * cars.length)];
-      const model = models[Math.floor(Math.random() * models.length)];
-      return car + " " + model;
+      const car = brands[Math.floor(Math.random() * brands.length)];
+      const brand = car.brand;
+      const model = car.models[Math.floor(Math.random() * car.models.length)];
+      return brand + " " + model;
     }
 
     for (let i = 0; i < 100; i++) {
@@ -232,73 +203,48 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function deleteCar(id: number) {
-    try {
-      const data = await fetch(`${BASE_URL}/garage/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    const result = await useFetch(`${BASE_URL}/garage/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      const result = await data.json();
+    dispatch({ type: "DELETE_CAR", payload: id });
 
-      dispatch({ type: "DELETE_CAR", payload: id });
-
-      return result;
-    } catch (error) {
-      throw new Error("Failed to create a car: " + error);
-    }
+    return result;
   }
 
   async function updateCar(id: number, name: string, color: string) {
-    try {
-      const response = await fetch(`${BASE_URL}/garage/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, color }),
-      });
+    const result = await useFetch(`${BASE_URL}/garage/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, color }),
+    });
 
-      if (!response.ok) {
-        console.error(
-          "Failed to update the car with response status:",
-          response.status
-        );
-        return null;
-      }
-      const result = await response.json();
+    dispatch({ type: "UPDATE_CAR", payload: result });
 
-      dispatch({ type: "UPDATE_CAR", payload: result });
-
-      return result;
-    } catch (error) {
-      throw new Error(`Failed to update the car with id ${id}: ${error}`);
-    }
+    return result;
   }
 
   async function startStop(id: number, status: "started" | "stopped") {
-    try {
-      const response = await fetch(
-        `${BASE_URL}/engine?id=${id}&status=${status}`,
-        {
-          method: "PATCH",
-        }
-      );
-      const result = await response.json();
-
-      if (status === "started" && response.ok) {
-        const { velocity, distance } = result;
-        const time = distance / velocity / 1000;
-        dispatch({ type: "SET_RACE_COMPLETION_TIME", payload: { id, time } });
-      } else if (status === "stopped") {
-        dispatch({
-          type: "SET_RACE_COMPLETION_TIME",
-          payload: { id, time: NaN },
-        });
+    const result = await useFetch(
+      `${BASE_URL}/engine?id=${id}&status=${status}`,
+      {
+        method: "PATCH",
       }
-    } catch (error) {
-      console.error(`Failed to start or stop the car: ${error}`);
+    );
+    if (status === "started") {
+      const { velocity, distance } = result;
+      const time = distance / velocity / 1000;
+      dispatch({ type: "SET_RACE_COMPLETION_TIME", payload: { id, time } });
+    } else if (status === "stopped") {
+      dispatch({
+        type: "SET_RACE_COMPLETION_TIME",
+        payload: { id, time: NaN },
+      });
     }
   }
 
@@ -369,11 +315,9 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function setWinnerPage(newPage: number) {
-    console.log(newPage);
-    const request = await fetch(`${BASE_URL}/winners`);
-    const response = await request.json();
+    const result = await useFetch(`${BASE_URL}/winners`);
 
-    const maxPage = Math.floor(response.length / 10);
+    const maxPage = Math.floor(result.length / 10);
 
     if (newPage <= maxPage && newPage >= 1) {
       dispatch({ type: "SET_WIN_PAGE", payload: newPage });
@@ -381,41 +325,23 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function getMaxPages(): Promise<number> {
-    try {
-      const request = await fetch(`${BASE_URL}/winners`);
-      const data = await request.json();
-
-      const maxPages = Math.floor((data as WinnerCarProps[]).length / 10) + 1;
-      return maxPages;
-    } catch (error) {
-      throw new Error("Failed to get max pages");
-    }
+    const result = await useFetch(`${BASE_URL}/winners`);
+    const maxPages =
+      (await Math.floor((result as WinnerCarProps[]).length / 10)) + 1;
+    return maxPages;
   }
 
   async function getWinners(): Promise<any> {
-    try {
-      const response = await fetch(
-        `${BASE_URL}/winners?_limit=10&_page=${state.winnerPage}`
-      );
-      const data = await response.json();
-
-      dispatch({ type: "SET_WINNERS", payload: data });
-      return data;
-    } catch (error) {
-      console.error(`Failed to get winners: ${error}`);
-    }
+    const result = await useFetch(
+      `${BASE_URL}/winners?_limit=10&_page=${state.winnerPage}`
+    );
+    dispatch({ type: "SET_WINNERS", payload: result });
+    return result;
   }
 
   async function getWinner(id: number): Promise<any> {
-    try {
-      const response = await fetch(`${BASE_URL}/winners/${id}`);
-      const data = await response.json();
-
-      console.log(data);
-      return data;
-    } catch (error) {
-      console.error(`Failed to get winners: ${error}`);
-    }
+    const result = await useFetch(`${BASE_URL}/winners/${id}`);
+    return result;
   }
 
   async function createWinner(id: number) {
@@ -425,26 +351,19 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
     const time: number | undefined = state.raceCompletionTimes[id];
 
-    try {
-      const winnerCar = JSON.stringify({
-        id: id,
-        wins: 1,
-        time: Number(time.toFixed(2)),
-      });
+    const winnerCar = JSON.stringify({
+      id: id,
+      wins: 1,
+      time: Number(time.toFixed(2)),
+    });
 
-      const response = await fetch(`${BASE_URL}/winners`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: winnerCar,
-      });
+    const result = await useFetch(`${BASE_URL}/winners`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: winnerCar,
+    });
 
-      const data = await response.json();
-      await dispatch({ type: "SET_WINNER", payload: undefined });
-
-      return data;
-    } catch (error) {
-      console.error("Failed to create a winner " + error);
-    }
+    return result;
   }
 
   async function updateWinner(id: number, time: number) {
@@ -453,37 +372,26 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
       console.error(`Car doesn't exist`);
       return;
     }
+    const finishTime = Math.min(existingCar.time, time);
 
-    try {
-      const finishTime = Math.min(existingCar.time, time);
-      console.log(finishTime);
-      const response = await fetch(`${BASE_URL}/winners/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id,
-          time: finishTime,
-          wins: existingCar.wins + 1,
-        }),
-      });
-      const data = await response.json();
-
-      return data;
-    } catch (error) {
-      console.error(`Failed to update a winner ${error}`);
-    }
+    const result = useFetch(`${BASE_URL}/winners/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id,
+        time: finishTime,
+        wins: existingCar.wins + 1,
+      }),
+    });
+    return result;
   }
 
   async function deleteWinner(id: number): Promise<any> {
-    try {
-      const response = await fetch(`${BASE_URL}/winners/${id}`, {
-        method: "DELETE",
-      });
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Failed to delete the winner");
-    }
+    const result = useFetch(`${BASE_URL}/winners/${id}`, {
+      method: "DELETE",
+    });
+
+    return result;
   }
 
   const resetCars = async () => {
@@ -493,7 +401,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
     try {
       await Promise.all(promises);
-      await dispatch({ type: "SET_STATUS", payload: "stopped" });
+      dispatch({ type: "SET_STATUS", payload: "stopped" });
     } catch (error) {
       console.error("Failed to stop the cars " + error);
     }

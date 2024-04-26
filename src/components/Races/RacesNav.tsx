@@ -19,25 +19,21 @@ function RacesNav() {
 
   function nameUpdatingHandler(value: string) {
     if (state.carIsSelected) {
-      // setUpdatingValue({ ...updatingValue, name: value });
       setAppState({ ...appState, updateValue: value });
     }
   }
 
   function colorUpdatingHandler(value: string) {
     if (state.carIsSelected) {
-      // setUpdatingValue({ ...updatingValue, color: value });
       setAppState({ ...appState, updateColor: value });
     }
   }
 
   function nameCreatingValue(value: string) {
-    // setCreatingValue({ ...creatingValue, name: value });
     setAppState({ ...appState, createValue: value });
   }
 
   function colorCreatingValue(value: string) {
-    // setCreatingValue({ ...creatingValue, color: value });
     setAppState({ ...appState, createColor: value });
   }
 
@@ -65,22 +61,22 @@ function RacesNav() {
     <div className={style.nav}>
       <div className={style.nav__item}>
         <button
-          className={
-            state.status !== "loading" && state.status !== "race"
-              ? style.btn
-              : style.disabledBtn
-          }
+          className={state.status === "stopped" ? style.btn : style.disabledBtn}
           onClick={() => {
-            if (state.status !== "loading" && state.status !== "race")
-              startAllCars();
+            if (state.status === "stopped") startAllCars();
           }}
         >
           Race <CiPlay1 />
         </button>
         <button
-          className={state.status !== "loading" ? style.btn : style.disabledBtn}
+          className={
+            state.status !== "loading" && state.status !== "stopped"
+              ? style.btn
+              : style.disabledBtn
+          }
           onClick={() => {
-            if (state.status !== "stopped") resetCars();
+            if (state.status !== "stopped" && state.status !== "loading")
+              resetCars();
           }}
         >
           Reset <GrPowerReset />
