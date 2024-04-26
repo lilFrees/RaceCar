@@ -237,6 +237,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
       }
     );
     if (status === "started") {
+      dispatch({ type: "SET_STATUS", payload: "race" });
       const { velocity, distance } = result;
       const time = distance / velocity / 1000;
       dispatch({ type: "SET_RACE_COMPLETION_TIME", payload: { id, time } });
@@ -245,6 +246,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
         type: "SET_RACE_COMPLETION_TIME",
         payload: { id, time: NaN },
       });
+      dispatch({ type: "SET_STATUS", payload: "stopped" });
     }
   }
 
